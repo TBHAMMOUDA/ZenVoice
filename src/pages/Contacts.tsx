@@ -24,9 +24,10 @@ import {
   Select,
   MenuItem,
   OutlinedInput,
-  Menu
+  Menu,
+  Stack
 } from '@mui/material';
-import { Plus, Phone, Mail, Building, Search, Check, UserPlus, Download, ChevronDown } from 'lucide-react';
+import { Plus, Phone, Mail, Building, Search, Check, UserPlus, Download, ChevronDown, List } from 'lucide-react';
 import { mockContacts } from '../data/mockData';
 
 const ITEMS_PER_PAGE = 25; // Increased from 6 to 25
@@ -133,6 +134,10 @@ const Contacts = () => {
     handleMenuClose();
   };
 
+  const handleCustomListsClick = () => {
+    navigate('/custom-lists');
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -146,7 +151,14 @@ const Contacts = () => {
             <Typography variant="h4" component="h1">
               Contacts
             </Typography>
-            <Box>
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="outlined"
+                startIcon={<List size={16} />}
+                onClick={handleCustomListsClick}
+              >
+                Custom Lists
+              </Button>
               <Button
                 variant="contained"
                 endIcon={<ChevronDown size={16} />}
@@ -168,7 +180,7 @@ const Contacts = () => {
                   Export Contacts
                 </MenuItem>
               </Menu>
-            </Box>
+            </Stack>
           </Box>
 
           {/* Filters section - aligned horizontally with reduced sizes */}
