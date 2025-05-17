@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Box, Drawer, List, ListItem, ListItemIcon, ListItemText, AppBar, Toolbar, Typography, IconButton, Avatar } from '@mui/material';
-import { LayoutDashboard, FileText, ShoppingCart, Users, LogOut, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, FileText, ShoppingCart, Users, LogOut, Sun, Moon, Settings } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -31,7 +31,15 @@ const Layout = () => {
             {mode === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </IconButton>
           <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
-            <Avatar src={user?.avatar} alt={user?.name} sx={{ width: 32, height: 32 }} />
+            <IconButton color="inherit" onClick={() => navigate('/settings')}>
+              <Settings size={20} />
+            </IconButton>
+            <IconButton 
+              sx={{ ml: 1 }}
+              onClick={() => navigate('/profile')}
+            >
+              <Avatar src={user?.avatar} alt={user?.name} sx={{ width: 32, height: 32 }} />
+            </IconButton>
             <Typography variant="subtitle1" sx={{ ml: 1, mr: 2 }}>
               {user?.name}
             </Typography>
