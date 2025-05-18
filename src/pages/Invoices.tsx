@@ -24,7 +24,7 @@ import {
   Tooltip,
   InputAdornment
 } from '@mui/material';
-import { Plus, Search, Filter, Link as LinkIcon, Calendar, DollarSign } from 'lucide-react';
+import { Plus, Search, Filter, Link as LinkIcon, Calendar, DollarSign, ChevronDown, Download } from 'lucide-react';
 import { mockInvoices, mockOrders } from '../data/mockData';
 import { format } from 'date-fns';
 
@@ -70,6 +70,7 @@ const Invoices = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
 
   // Get unique suppliers for filter dropdown
   const suppliers = useMemo(() => {
@@ -153,6 +154,20 @@ const Invoices = () => {
     setStartDate('');
     setEndDate('');
   };
+  
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleExport = () => {
+    // Export functionality would go here
+    console.log('Exporting invoices...');
+    handleMenuClose();
+  };
 
   return (
     <motion.div
@@ -169,35 +184,52 @@ const Invoices = () => {
             </Typography>
             <Button
               variant="contained"
-              startIcon={<Plus size={20} />}
-              onClick={() => navigate('/invoices/create')}
+              endIcon={<ChevronDown size={16} />}
+              onClick={handleMenuOpen}
             >
-              Create Invoice
+              Actions
             </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+            >
+              <MenuItem onClick={() => { navigate('/invoices/create'); handleMenuClose(); }}>
+                <Plus size={16} style={{ marginRight: 8 }} />
+                Add New Invoice
+              </MenuItem>
+              <MenuItem onClick={handleExport}>
+                <Download size={16} style={{ marginRight: 8 }} />
+                Export Invoices
+              </MenuItem>
+            </Menu>
           </Box>
 
-          {/* Search and Filter Section */}
+          {/* Search and Filter Section - Smaller size like Contacts page */}
           <Box sx={{ mb: 3 }}>
             <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={4}>
                 <TextField
+                  size="small"
                   fullWidth
                   placeholder="Search invoices..."
                   value={searchTerm}
                   onChange={handleSearchChange}
                   InputProps={{
-                    startAdornment: <Search size={20} style={{ marginRight: 8, color: 'gray' }} />
+                    startAdornment: <Search size={16} style={{ marginRight: 8, color: 'gray' }} />
                   }}
+                  sx={{ '& .MuiInputBase-root': { fontSize: '0.9rem' } }}
                 />
               </Grid>
               <Grid item xs={12} md={4}>
-                <FormControl fullWidth>
+                <FormControl fullWidth size="small">
                   <InputLabel id="status-filter-label">Status</InputLabel>
                   <Select
                     labelId="status-filter-label"
                     value={statusFilter}
                     label="Status"
                     onChange={handleStatusFilterChange}
+                    sx={{ '& .MuiInputBase-root': { fontSize: '0.9rem' } }}
                   >
                     <MenuItem value="all">All Statuses</MenuItem>
                     <MenuItem value="received">Received</MenuItem>
@@ -207,12 +239,14 @@ const Invoices = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={2}>
+              <Grid item xs={12} md={4}>
                 <Button
                   fullWidth
                   variant="outlined"
-                  startIcon={<Filter size={20} />}
+                  size="small"
+                  startIcon={<Filter size={16} />}
                   onClick={toggleFilters}
+                  sx={{ height: '40px', fontSize: '0.85rem' }}
                 >
                   {showFilters ? 'Hide Filters' : 'More Filters'}
                 </Button>
