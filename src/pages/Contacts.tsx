@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -12,25 +12,24 @@ import {
   Button,
   Avatar,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   Pagination,
   IconButton,
   Tooltip,
   Chip,
   Autocomplete,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  OutlinedInput,
   Menu,
-  Stack
+  Stack,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import { Plus, Phone, Mail, Building, Search, Check, UserPlus, Download, ChevronDown, List, Filter } from 'lucide-react';
-import { mockContacts } from '../data/mockData';
+import mockApi from '../services/mockApi';
 
-const ITEMS_PER_PAGE = 25; // Increased from 6 to 25
+const ITEMS_PER_PAGE = 25;
 
 const Contacts = () => {
   const navigate = useNavigate();
@@ -41,20 +40,44 @@ const Contacts = () => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  
+  // State for API data
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Extract unique companies and tags from mockContacts
-  const companies = useMemo(() => {
-    return [...new Set(mockContacts.map(contact => contact.company))];
+  // Fetch contacts from API
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        setLoading(true);
+        const data = await mockApi.contacts.getAll();
+        setContacts(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching contacts:', err);
+        setError('Failed to load contacts. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContacts();
   }, []);
+
+  // Extract unique companies and tags from contacts
+  const companies = useMemo(() => {
+    return [...new Set(contacts.map(contact => contact.company))];
+  }, [contacts]);
 
   const tags = useMemo(() => {
-    const allTags = mockContacts.flatMap(contact => contact.tags || []);
+    const allTags = contacts.flatMap(contact => contact.tags || []);
     return [...new Set(allTags)];
-  }, []);
+  }, [contacts]);
 
   // Filter and search contacts
   const filteredContacts = useMemo(() => {
-    return mockContacts
+    return contacts
       .filter(contact => {
         // Global text search (expanded to include name, email, and phone)
         const matchesSearch = (
@@ -82,7 +105,7 @@ const Contacts = () => {
         
         return matchesSearch && matchesFilter && matchesCompany && matchesTags;
       });
-  }, [search, filter, selectedCompanies, selectedTags]);
+  }, [contacts, search, filter, selectedCompanies, selectedTags]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredContacts.length / ITEMS_PER_PAGE);
@@ -138,6 +161,24 @@ const Contacts = () => {
   const handleCustomListsClick = () => {
     navigate('/custom-lists');
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg">
+        <Box sx={{ py: 4 }}>
+          <Alert severity="error">{error}</Alert>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <motion.div

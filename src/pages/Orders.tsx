@@ -1,47 +1,38 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Box, 
   Typography, 
   Container, 
-  Paper, 
+  Button, 
   Table, 
   TableBody, 
   TableCell, 
   TableContainer, 
   TableHead, 
   TableRow, 
-  Chip, 
+  Paper, 
+  Chip,
   TextField,
-  Grid,
-  Button,
+  MenuItem,
+  Select,
   FormControl,
   InputLabel,
-  Select,
-  MenuItem,
+  Grid,
+  IconButton,
+  Tooltip,
+  InputAdornment,
   Menu,
-  Pagination,
-  InputAdornment
+  CircularProgress,
+  Alert,
+  Pagination
 } from '@mui/material';
-import { mockOrders } from '../data/mockData';
+import { Plus, Search, Filter, ChevronDown, Download } from 'lucide-react';
 import { format } from 'date-fns';
-import { Search, Filter, Plus, ChevronDown, Download } from 'lucide-react';
+import mockApi from '../services/mockApi';
 
 const ITEMS_PER_PAGE = 25;
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'completed':
-      return 'success';
-    case 'processing':
-      return 'info';
-    case 'pending':
-      return 'warning';
-    default:
-      return 'default';
-  }
-};
 
 const Orders = () => {
   const navigate = useNavigate();
@@ -49,23 +40,42 @@ const Orders = () => {
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [minTotal, setMinTotal] = useState('');
-  const [maxTotal, setMaxTotal] = useState('');
+  const [minAmount, setMinAmount] = useState('');
+  const [maxAmount, setMaxAmount] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [page, setPage] = useState(1);
+  
+  // API data states
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Get unique customers for filter dropdown
-  const customers = useMemo(() => {
-    return [...new Set(mockOrders.map(order => order.customerName))].filter(Boolean);
+  // Fetch data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const ordersData = await mockApi.orders.getAll();
+        setOrders(ordersData);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching orders data:', err);
+        setError('Failed to load orders. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   // Filter orders based on all criteria
   const filteredOrders = useMemo(() => {
-    return mockOrders.filter(order => {
-      // Search term filter (ID, customer, items)
+    return orders.filter(order => {
+      // Search term filter (ID, customer)
       const matchesSearch = searchTerm === '' || 
         order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.customerName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -73,18 +83,20 @@ const Orders = () => {
       // Status filter
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
       
-      // Total range filter
-      const matchesMinTotal = minTotal === '' || order.total >= parseFloat(minTotal);
-      const matchesMaxTotal = maxTotal === '' || order.total <= parseFloat(maxTotal);
+      // Amount range filter
+      const matchesMinAmount = minAmount === '' || order.total >= parseFloat(minAmount);
+      const matchesMaxAmount = maxAmount === '' || order.total <= parseFloat(maxAmount);
       
       // Date range filter
       const orderDate = new Date(order.orderDate);
       const matchesStartDate = startDate === '' || new Date(startDate) <= orderDate;
       const matchesEndDate = endDate === '' || new Date(endDate) >= orderDate;
       
-      return matchesSearch && matchesStatus && matchesMinTotal && matchesMaxTotal && matchesStartDate && matchesEndDate;
+      return matchesSearch && matchesStatus && 
+             matchesMinAmount && matchesMaxAmount && 
+             matchesStartDate && matchesEndDate;
     });
-  }, [searchTerm, statusFilter, minTotal, maxTotal, startDate, endDate]);
+  }, [orders, searchTerm, statusFilter, minAmount, maxAmount, startDate, endDate]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
@@ -103,13 +115,13 @@ const Orders = () => {
     setPage(1);
   };
 
-  const handleMinTotalChange = (event) => {
-    setMinTotal(event.target.value);
+  const handleMinAmountChange = (event) => {
+    setMinAmount(event.target.value);
     setPage(1);
   };
 
-  const handleMaxTotalChange = (event) => {
-    setMaxTotal(event.target.value);
+  const handleMaxAmountChange = (event) => {
+    setMaxAmount(event.target.value);
     setPage(1);
   };
 
@@ -134,8 +146,8 @@ const Orders = () => {
   const clearFilters = () => {
     setSearchTerm('');
     setStatusFilter('all');
-    setMinTotal('');
-    setMaxTotal('');
+    setMinAmount('');
+    setMaxAmount('');
     setStartDate('');
     setEndDate('');
     setPage(1);
@@ -154,6 +166,37 @@ const Orders = () => {
     console.log('Exporting orders...');
     handleMenuClose();
   };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending':
+        return 'warning';
+      case 'processing':
+        return 'info';
+      case 'completed':
+        return 'success';
+      default:
+        return 'default';
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg">
+        <Box sx={{ py: 4 }}>
+          <Alert severity="error">{error}</Alert>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <motion.div
@@ -191,7 +234,7 @@ const Orders = () => {
             </Menu>
           </Box>
 
-          {/* Search and Filter Section - Small size like Invoices page */}
+          {/* Search and Filter Section */}
           <Box sx={{ mb: 3 }}>
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} md={4}>
@@ -245,61 +288,50 @@ const Orders = () => {
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      size="small"
-                      label="Min Total"
+                      label="Min Amount"
                       type="number"
-                      value={minTotal}
-                      onChange={handleMinTotalChange}
+                      value={minAmount}
+                      onChange={handleMinAmountChange}
                       InputProps={{
                         startAdornment: <InputAdornment position="start">$</InputAdornment>,
                       }}
-                      sx={{ '& .MuiInputBase-root': { fontSize: '0.9rem' } }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      size="small"
-                      label="Max Total"
+                      label="Max Amount"
                       type="number"
-                      value={maxTotal}
-                      onChange={handleMaxTotalChange}
+                      value={maxAmount}
+                      onChange={handleMaxAmountChange}
                       InputProps={{
                         startAdornment: <InputAdornment position="start">$</InputAdornment>,
                       }}
-                      sx={{ '& .MuiInputBase-root': { fontSize: '0.9rem' } }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      size="small"
                       label="Start Date"
                       type="date"
                       value={startDate}
                       onChange={handleStartDateChange}
                       InputLabelProps={{ shrink: true }}
-                      sx={{ '& .MuiInputBase-root': { fontSize: '0.9rem' } }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      size="small"
                       label="End Date"
                       type="date"
                       value={endDate}
                       onChange={handleEndDateChange}
                       InputLabelProps={{ shrink: true }}
-                      sx={{ '& .MuiInputBase-root': { fontSize: '0.9rem' } }}
                     />
                   </Grid>
                   <Grid item xs={12}>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <Button 
-                        onClick={clearFilters}
-                        size="small"
-                      >
+                      <Button onClick={clearFilters}>
                         Clear Filters
                       </Button>
                     </Box>
@@ -319,17 +351,13 @@ const Orders = () => {
                   <TableCell>Status</TableCell>
                   <TableCell>Order Date</TableCell>
                   <TableCell>Items</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {paginatedOrders.length > 0 ? (
                   paginatedOrders.map((order) => (
-                    <TableRow
-                      key={order.id}
-                      hover
-                      onClick={() => navigate(`/orders/${order.id}`)}
-                      sx={{ cursor: 'pointer' }}
-                    >
+                    <TableRow key={order.id} hover>
                       <TableCell>{order.id}</TableCell>
                       <TableCell>{order.customerName}</TableCell>
                       <TableCell>${order.total.toFixed(2)}</TableCell>
@@ -342,11 +370,19 @@ const Orders = () => {
                       </TableCell>
                       <TableCell>{format(new Date(order.orderDate), 'MMM dd, yyyy')}</TableCell>
                       <TableCell>{order.items.length} items</TableCell>
+                      <TableCell>
+                        <Button
+                          size="small"
+                          onClick={() => navigate(`/orders/${order.id}`)}
+                        >
+                          View
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
+                    <TableCell colSpan={7} align="center">
                       No orders found matching the current filters
                     </TableCell>
                   </TableRow>
@@ -354,8 +390,8 @@ const Orders = () => {
               </TableBody>
             </Table>
           </TableContainer>
-          
-          {/* Pagination controls */}
+
+          {/* Pagination */}
           {totalPages > 1 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
               <Pagination

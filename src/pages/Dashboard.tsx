@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Box, 
@@ -8,7 +8,8 @@ import {
   Card, 
   CardContent, 
   CardHeader,
-  Divider
+  Divider,
+  CircularProgress
 } from '@mui/material';
 import { 
   BarChart, 
@@ -22,12 +23,43 @@ import {
   XAxis,
   YAxis
 } from 'recharts';
-import { mockInvoices, mockOrders } from '../data/mockData';
 import { FileText, ShoppingCart, DollarSign, TrendingUp } from 'lucide-react';
+import mockApi from '../services/mockApi';
 
 const Dashboard = () => {
+  const [invoices, setInvoices] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch data from mock API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [invoicesData, ordersData] = await Promise.all([
+          mockApi.invoices.getAll(),
+          mockApi.orders.getAll()
+        ]);
+        
+        setInvoices(invoicesData);
+        setOrders(ordersData);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   // Calculate invoice statistics
   const invoiceStats = useMemo(() => {
+    if (!invoices.length) return { counts: { received: 0, to_be_posted: 0, validated: 0, posted: 0 }, total: 0, totalAmount: '0.00' };
+    
     const statusCounts = {
       received: 0,
       to_be_posted: 0,
@@ -37,7 +69,7 @@ const Dashboard = () => {
     
     let totalAmount = 0;
     
-    mockInvoices.forEach(invoice => {
+    invoices.forEach(invoice => {
       if (statusCounts.hasOwnProperty(invoice.status)) {
         statusCounts[invoice.status]++;
       }
@@ -46,13 +78,15 @@ const Dashboard = () => {
     
     return {
       counts: statusCounts,
-      total: mockInvoices.length,
+      total: invoices.length,
       totalAmount: totalAmount.toFixed(2)
     };
-  }, []);
+  }, [invoices]);
 
   // Calculate order statistics
   const orderStats = useMemo(() => {
+    if (!orders.length) return { counts: { pending: 0, processing: 0, completed: 0 }, total: 0, totalAmount: '0.00' };
+    
     const statusCounts = {
       pending: 0,
       processing: 0,
@@ -61,7 +95,7 @@ const Dashboard = () => {
     
     let totalAmount = 0;
     
-    mockOrders.forEach(order => {
+    orders.forEach(order => {
       if (statusCounts.hasOwnProperty(order.status)) {
         statusCounts[order.status]++;
       }
@@ -70,10 +104,10 @@ const Dashboard = () => {
     
     return {
       counts: statusCounts,
-      total: mockOrders.length,
+      total: orders.length,
       totalAmount: totalAmount.toFixed(2)
     };
-  }, []);
+  }, [orders]);
 
   // Prepare data for invoice status chart
   const invoiceChartData = useMemo(() => {
@@ -102,6 +136,22 @@ const Dashboard = () => {
     { name: 'Apr', invoices: 8, orders: 6 },
     { name: 'May', invoices: 7, orders: 4 }
   ];
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography color="error" variant="h6">{error}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <motion.div

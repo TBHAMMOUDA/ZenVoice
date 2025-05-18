@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -20,109 +20,106 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Alert
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import { ArrowLeft, Edit, Trash2, Mail, Phone, Building, AlertTriangle } from 'lucide-react';
-import { mockContacts } from '../data/mockData';
-
-// Mock data for custom lists
-const mockCustomLists = [
-  {
-    id: '1',
-    name: 'Sales Team Contacts',
-    description: 'Key contacts for the sales department',
-    createdAt: '2024-03-15',
-    updatedAt: '2024-03-20',
-    contactIds: ['1', '2', '4', '6'],
-    tags: ['sales', 'priority']
-  },
-  {
-    id: '2',
-    name: 'Marketing Partners',
-    description: 'External marketing agencies and partners',
-    createdAt: '2024-03-10',
-    updatedAt: '2024-03-18',
-    contactIds: ['3', '5'],
-    tags: ['marketing', 'external']
-  },
-  {
-    id: '3',
-    name: 'Technical Support',
-    description: 'Technical support contacts for all products',
-    createdAt: '2024-03-05',
-    updatedAt: '2024-03-15',
-    contactIds: ['1', '3', '4', '5', '6'],
-    tags: ['support', 'technical']
-  },
-  {
-    id: '4',
-    name: 'Executive Team',
-    description: 'Executive contacts across partner companies',
-    createdAt: '2024-02-28',
-    updatedAt: '2024-03-10',
-    contactIds: ['2', '3', '5'],
-    tags: ['executive', 'priority']
-  }
-];
+import mockApi from '../services/mockApi';
 
 const CustomListDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  
+  // State for API data
+  const [customList, setCustomList] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  // Find the custom list by ID
-  const customList = mockCustomLists.find(list => list.id === id);
+  // Fetch custom list details from API
+  useEffect(() => {
+    const fetchCustomList = async () => {
+      try {
+        setLoading(true);
+        const data = await mockApi.customLists.getById(id);
+        setCustomList(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching custom list details:', err);
+        setError('Failed to load custom list details. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // If list not found, show error
-  if (!customList) {
-    return (
-      <Container maxWidth="lg">
-        <Box sx={{ py: 4, textAlign: 'center' }}>
-          <Typography variant="h5" color="error">
-            Custom list not found
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<ArrowLeft size={16} />}
-            onClick={() => navigate('/custom-lists')}
-            sx={{ mt: 2 }}
-          >
-            Back to Lists
-          </Button>
-        </Box>
-      </Container>
-    );
-  }
-
-  // Get contacts in this list
-  const listContacts = mockContacts.filter(contact => 
-    customList.contactIds.includes(contact.id)
-  );
-
-  // Get unique companies in this list
-  const companies = [...new Set(listContacts.map(contact => contact.company))];
-
-  // Check if contacts are from different companies
-  const hasMultipleCompanies = companies.length > 1;
-
-  const handleEditList = () => {
-    navigate(`/custom-lists/${id}/edit`);
-  };
+    if (id) {
+      fetchCustomList();
+    }
+  }, [id]);
 
   const handleDeleteClick = () => {
     setDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
-    // This would typically delete the list and redirect
-    console.log(`Deleting list ${id}`);
-    setDeleteDialogOpen(false);
-    navigate('/custom-lists');
+  const handleDeleteConfirm = async () => {
+    try {
+      await mockApi.customLists.delete(id);
+      setDeleteDialogOpen(false);
+      navigate('/custom-lists');
+    } catch (err) {
+      console.error('Error deleting custom list:', err);
+      setError('Failed to delete custom list. Please try again later.');
+      setDeleteDialogOpen(false);
+    }
   };
 
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg">
+        <Box sx={{ py: 4 }}>
+          <Button
+            startIcon={<ArrowLeft size={16} />}
+            onClick={() => navigate('/custom-lists')}
+            sx={{ mb: 2 }}
+          >
+            Back to Lists
+          </Button>
+          <Alert severity="error">{error}</Alert>
+        </Box>
+      </Container>
+    );
+  }
+
+  if (!customList) {
+    return (
+      <Container maxWidth="lg">
+        <Box sx={{ py: 4 }}>
+          <Button
+            startIcon={<ArrowLeft size={16} />}
+            onClick={() => navigate('/custom-lists')}
+            sx={{ mb: 2 }}
+          >
+            Back to Lists
+          </Button>
+          <Alert severity="warning">Custom list not found.</Alert>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <motion.div
@@ -133,174 +130,157 @@ const CustomListDetail = () => {
     >
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
-          {/* Header with back button */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
             <Button
               startIcon={<ArrowLeft size={16} />}
               onClick={() => navigate('/custom-lists')}
               sx={{ mr: 2 }}
             >
-              Back to Lists
+              Back
+            </Button>
+            <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
+              {customList.name}
+            </Typography>
+            <Button
+              variant="outlined"
+              startIcon={<Edit size={16} />}
+              onClick={() => navigate(`/custom-lists/${id}/edit`)}
+              sx={{ mr: 1 }}
+            >
+              Edit
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<Trash2 size={16} />}
+              onClick={handleDeleteClick}
+            >
+              Delete
             </Button>
           </Box>
 
-          {/* List header with title and actions */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
-            <Box>
-              <Typography variant="h4" component="h1">
-                {customList.name}
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-                {customList.description}
-              </Typography>
-              
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 2 }}>
-                {customList.tags.map(tag => (
-                  <Chip 
-                    key={tag} 
-                    label={tag} 
-                    size="small" 
-                    sx={{ borderRadius: '4px' }} 
-                  />
-                ))}
-              </Box>
-            </Box>
-            
-            <Box>
-              <Button
-                variant="outlined"
-                startIcon={<Edit size={16} />}
-                onClick={handleEditList}
-                sx={{ mr: 1 }}
-              >
-                Edit List
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<Trash2 size={16} />}
-                onClick={handleDeleteClick}
-              >
-                Delete
-              </Button>
-            </Box>
-          </Box>
-
-          {/* List metadata */}
-          <Card sx={{ mb: 4 }}>
-            <CardContent>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Typography variant="body2" color="text.secondary">
-                    Created
-                  </Typography>
-                  <Typography variant="body1">
-                    {new Date(customList.createdAt).toLocaleDateString()}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Typography variant="body2" color="text.secondary">
-                    Last Updated
-                  </Typography>
-                  <Typography variant="body1">
-                    {new Date(customList.updatedAt).toLocaleDateString()}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Typography variant="body2" color="text.secondary">
-                    Contacts
-                  </Typography>
-                  <Typography variant="body1">
-                    {listContacts.length}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Typography variant="body2" color="text.secondary">
-                    Companies
-                  </Typography>
-                  <Typography variant="body1">
-                    {companies.length}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-
-          {/* Warning for multiple companies */}
-          {hasMultipleCompanies && (
-            <Alert 
-              severity="warning" 
-              icon={<AlertTriangle size={16} />}
-              sx={{ mb: 4 }}
-            >
-              This list contains contacts from {companies.length} different companies
-            </Alert>
-          )}
-
-          {/* Contacts in this list */}
-          <Typography variant="h5" sx={{ mb: 3 }}>
-            Contacts in this List
-          </Typography>
-
           <Grid container spacing={3}>
-            {listContacts.map((contact) => (
-              <Grid item xs={12} sm={6} md={4} key={contact.id}>
-                <Card sx={{ height: '100%' }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar
-                        src={contact.avatar}
-                        alt={`${contact.firstName} ${contact.lastName}`}
-                        sx={{ width: 56, height: 56, mr: 2 }}
-                      />
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="h6" sx={{ fontSize: '1rem' }}>
-                          {contact.firstName} {contact.lastName}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {contact.company}
-                        </Typography>
-                      </Box>
+            <Grid item xs={12} md={4}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    List Details
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" paragraph>
+                    {customList.description}
+                  </Typography>
+                  
+                  <Divider sx={{ my: 2 }} />
+                  
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Created
+                    </Typography>
+                    <Typography variant="body2">
+                      {new Date(customList.createdAt).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Last Updated
+                    </Typography>
+                    <Typography variant="body2">
+                      {new Date(customList.updatedAt).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                  
+                  {customList.tags && customList.tags.length > 0 && (
+                    <Box>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Tags
+                      </Typography>
+                      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                        {customList.tags.map(tag => (
+                          <Chip 
+                            key={tag} 
+                            label={tag} 
+                            size="small" 
+                            sx={{ mt: 0.5 }} 
+                          />
+                        ))}
+                      </Stack>
                     </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <Mail size={16} style={{ marginRight: 8 }} />
-                      <Typography variant="body2">{contact.email}</Typography>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+            
+            <Grid item xs={12} md={8}>
+              <Card>
+                <CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">
+                      Contacts ({customList.contacts ? customList.contacts.length : 0})
+                    </Typography>
+                  </Box>
+                  
+                  {customList.contacts && customList.contacts.length > 0 ? (
+                    <Grid container spacing={2}>
+                      {customList.contacts.map(contact => (
+                        <Grid item xs={12} sm={6} key={contact.id}>
+                          <Card variant="outlined">
+                            <CardContent sx={{ p: 2 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                <Avatar
+                                  src={contact.avatar}
+                                  alt={`${contact.firstName} ${contact.lastName}`}
+                                  sx={{ width: 40, height: 40, mr: 2 }}
+                                />
+                                <Box>
+                                  <Typography variant="subtitle1">
+                                    {contact.firstName} {contact.lastName}
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {contact.company}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                              
+                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                                <Mail size={14} style={{ marginRight: 8 }} />
+                                <Typography variant="body2">{contact.email}</Typography>
+                              </Box>
+                              
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Phone size={14} style={{ marginRight: 8 }} />
+                                <Typography variant="body2">{contact.phone}</Typography>
+                              </Box>
+                              
+                              <Box sx={{ mt: 1, display: 'flex', justifyContent: 'flex-end' }}>
+                                <Button
+                                  size="small"
+                                  onClick={() => navigate(`/contacts/${contact.id}`)}
+                                >
+                                  View
+                                </Button>
+                              </Box>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  ) : (
+                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                      <AlertTriangle size={24} style={{ marginBottom: 8, color: 'orange' }} />
+                      <Typography variant="body1" color="text.secondary">
+                        No contacts in this list.
+                      </Typography>
                     </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <Phone size={16} style={{ marginRight: 8 }} />
-                      <Typography variant="body2">{contact.phone}</Typography>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Building size={16} style={{ marginRight: 8 }} />
-                      <Typography variant="body2">{contact.company}</Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
-
-          {listContacts.length === 0 && (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography variant="body1" color="text.secondary">
-                No contacts in this list
-              </Typography>
-              <Button
-                variant="contained"
-                onClick={handleEditList}
-                sx={{ mt: 2 }}
-              >
-                Add Contacts
-              </Button>
-            </Box>
-          )}
         </Box>
       </Container>
-
-      {/* Confirmation Dialog for Delete */}
+      
+      {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
         onClose={handleDeleteCancel}
@@ -313,7 +293,7 @@ const CustomListDetail = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteCancel}>Cancel</Button>
-          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+          <Button onClick={handleDeleteConfirm} color="error" autoFocus>
             Delete
           </Button>
         </DialogActions>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -17,83 +17,80 @@ import {
   Stack,
   Divider,
   Avatar,
-  AvatarGroup
+  AvatarGroup,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import { Plus, Search, Edit, Trash2, Users, Building } from 'lucide-react';
-
-// Mock data for custom lists
-const mockCustomLists = [
-  {
-    id: '1',
-    name: 'Sales Team Contacts',
-    description: 'Key contacts for the sales department',
-    createdAt: '2024-03-15',
-    contactCount: 8,
-    companies: ['Tech Solutions Inc.', 'Digital Dynamics LLC'],
-    tags: ['sales', 'priority']
-  },
-  {
-    id: '2',
-    name: 'Marketing Partners',
-    description: 'External marketing agencies and partners',
-    createdAt: '2024-03-10',
-    contactCount: 5,
-    companies: ['Creative Design Co', 'Innovative Systems Corp'],
-    tags: ['marketing', 'external']
-  },
-  {
-    id: '3',
-    name: 'Technical Support',
-    description: 'Technical support contacts for all products',
-    createdAt: '2024-03-05',
-    contactCount: 12,
-    companies: ['Tech Solutions Inc.', 'Security First Inc', 'Global Solutions Ltd'],
-    tags: ['support', 'technical']
-  },
-  {
-    id: '4',
-    name: 'Executive Team',
-    description: 'Executive contacts across partner companies',
-    createdAt: '2024-02-28',
-    contactCount: 6,
-    companies: ['Tech Solutions Inc.', 'Digital Dynamics LLC', 'Innovative Systems Corp'],
-    tags: ['executive', 'priority']
-  }
-];
+import mockApi from '../services/mockApi';
 
 const CustomLists = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  
+  // API data states
+  const [customLists, setCustomLists] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Filter lists based on search
-  const filteredLists = mockCustomLists.filter(list => 
+  // Fetch custom lists from API
+  useEffect(() => {
+    const fetchCustomLists = async () => {
+      try {
+        setLoading(true);
+        const data = await mockApi.customLists.getAll();
+        setCustomLists(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching custom lists:', err);
+        setError('Failed to load custom lists. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomLists();
+  }, []);
+
+  // Filter lists based on search term
+  const filteredLists = customLists.filter(list => 
     list.name.toLowerCase().includes(search.toLowerCase()) ||
     list.description.toLowerCase().includes(search.toLowerCase()) ||
-    list.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
+    (list.tags && list.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase())))
   );
 
   const handleSearchChange = (event) => {
     setSearch(event.target.value);
   };
 
-  const handleCreateList = () => {
-    navigate('/custom-lists/create');
+  const handleDeleteList = async (id) => {
+    try {
+      await mockApi.customLists.delete(id);
+      // Update the local state after successful deletion
+      setCustomLists(prevLists => prevLists.filter(list => list.id !== id));
+    } catch (err) {
+      console.error('Error deleting custom list:', err);
+      // Show error notification (could be implemented with a snackbar)
+    }
   };
 
-  const handleViewList = (id) => {
-    navigate(`/custom-lists/${id}`);
-  };
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  const handleEditList = (id, event) => {
-    event.stopPropagation();
-    navigate(`/custom-lists/${id}/edit`);
-  };
-
-  const handleDeleteList = (id, event) => {
-    event.stopPropagation();
-    // This would typically show a confirmation modal
-    console.log(`Delete list ${id}`);
-  };
+  if (error) {
+    return (
+      <Container maxWidth="lg">
+        <Box sx={{ py: 4 }}>
+          <Alert severity="error">{error}</Alert>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <motion.div
@@ -106,138 +103,111 @@ const CustomLists = () => {
         <Box sx={{ py: 4 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
             <Typography variant="h4" component="h1">
-              Custom Contact Lists
+              Custom Lists
             </Typography>
             <Button
               variant="contained"
-              startIcon={<Plus size={20} />}
-              onClick={handleCreateList}
+              startIcon={<Plus size={16} />}
+              onClick={() => navigate('/custom-lists/create')}
             >
-              Create New List
+              Create List
             </Button>
           </Box>
 
           <Box sx={{ mb: 4 }}>
             <TextField
               fullWidth
-              size="small"
               placeholder="Search lists..."
               value={search}
               onChange={handleSearchChange}
               InputProps={{
-                startAdornment: <Search size={16} style={{ marginRight: 8, color: 'gray' }} />
+                startAdornment: <Search size={20} style={{ marginRight: 8, color: 'gray' }} />
               }}
-              sx={{ maxWidth: 400 }}
             />
           </Box>
 
           <Grid container spacing={3}>
-            {filteredLists.map((list) => (
-              <Grid item xs={12} md={6} key={list.id}>
-                <Card 
-                  sx={{ 
-                    height: '100%', 
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 3
-                    }
-                  }}
-                  onClick={() => handleViewList(list.id)}
-                >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                      <Typography variant="h6">{list.name}</Typography>
-                      <Box>
-                        <Tooltip title="Edit List">
-                          <IconButton 
-                            size="small" 
-                            onClick={(e) => handleEditList(list.id, e)}
-                          >
-                            <Edit size={16} />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Delete List">
-                          <IconButton 
-                            size="small" 
-                            color="error"
-                            onClick={(e) => handleDeleteList(list.id, e)}
-                          >
-                            <Trash2 size={16} />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </Box>
-                    
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      {list.description}
-                    </Typography>
-                    
-                    <Divider sx={{ my: 1.5 }} />
-                    
-                    <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Users size={16} style={{ marginRight: 8, color: 'gray' }} />
+            {filteredLists.length > 0 ? (
+              filteredLists.map((list) => (
+                <Grid item xs={12} sm={6} md={4} key={list.id}>
+                  <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      <Typography variant="h6" component="h2" gutterBottom>
+                        {list.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" paragraph>
+                        {list.description}
+                      </Typography>
+                      
+                      <Divider sx={{ my: 2 }} />
+                      
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <Users size={16} style={{ marginRight: 8 }} />
                         <Typography variant="body2">
                           {list.contactCount} contacts
                         </Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Building size={16} style={{ marginRight: 8, color: 'gray' }} />
+                      
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Building size={16} style={{ marginRight: 8 }} />
                         <Typography variant="body2">
-                          {list.companies.length} companies
+                          {list.companies && list.companies.length > 0 
+                            ? `${list.companies.length} companies` 
+                            : 'No companies'}
                         </Typography>
                       </Box>
-                    </Stack>
-                    
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-                      {list.tags.map(tag => (
-                        <Chip 
-                          key={tag} 
-                          label={tag} 
+                      
+                      {list.tags && list.tags.length > 0 && (
+                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                          {list.tags.map(tag => (
+                            <Chip 
+                              key={tag} 
+                              label={tag} 
+                              size="small" 
+                              sx={{ mt: 0.5 }} 
+                            />
+                          ))}
+                        </Stack>
+                      )}
+                    </CardContent>
+                    <CardActions>
+                      <Button 
+                        size="small" 
+                        onClick={() => navigate(`/custom-lists/${list.id}`)}
+                      >
+                        View
+                      </Button>
+                      <Button 
+                        size="small" 
+                        color="primary"
+                        onClick={() => navigate(`/custom-lists/${list.id}/edit`)}
+                      >
+                        Edit
+                      </Button>
+                      <Box sx={{ flexGrow: 1 }} />
+                      <Tooltip title="Delete list">
+                        <IconButton 
                           size="small" 
-                          sx={{ 
-                            height: '20px', 
-                            fontSize: '0.7rem',
-                            borderRadius: '4px'
-                          }} 
-                        />
-                      ))}
-                    </Box>
-                    
-                    <Typography variant="caption" color="text.secondary">
-                      Created on {new Date(list.createdAt).toLocaleDateString()}
-                    </Typography>
-                  </CardContent>
-                  <CardActions>
-                    <Button size="small" onClick={() => handleViewList(list.id)}>
-                      View Details
-                    </Button>
-                  </CardActions>
-                </Card>
+                          color="error"
+                          onClick={() => handleDeleteList(list.id)}
+                        >
+                          <Trash2 size={16} />
+                        </IconButton>
+                      </Tooltip>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              ))
+            ) : (
+              <Grid item xs={12}>
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No custom lists found. Create your first list to get started.
+                  </Typography>
+                </Box>
               </Grid>
-            ))}
+            )}
           </Grid>
-          
-          {filteredLists.length === 0 && (
-            <Box sx={{ textAlign: 'center', py: 6 }}>
-              <Typography variant="h6" color="text.secondary">
-                No custom lists found
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Create a new list to organize your contacts
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<Plus size={16} />}
-                onClick={handleCreateList}
-                sx={{ mt: 2 }}
-              >
-                Create New List
-              </Button>
-            </Box>
-          )}
         </Box>
       </Container>
     </motion.div>

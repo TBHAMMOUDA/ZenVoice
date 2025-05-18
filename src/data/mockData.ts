@@ -212,3 +212,42 @@ export const mockOrders = [
     ]
   }
 ];
+
+export const mockCustomLists = [
+  {
+    id: '1',
+    name: 'Sales Team Contacts',
+    description: 'Key contacts for the sales department',
+    createdAt: '2024-03-15',
+    updatedAt: '2024-03-20',
+    contactIds: ['1', '2', '4', '6'],
+    tags: ['sales', 'priority']
+  },
+  {
+    id: '2',
+    name: 'Marketing Partners',
+    description: 'External marketing agencies and partners',
+    createdAt: '2024-03-10',
+    updatedAt: '2024-03-18',
+    contactIds: ['3', '5'],
+    tags: ['marketing', 'external']
+  },
+  {
+    id: '3',
+    name: 'Technical Support',
+    description: 'Technical support contacts for all products',
+    createdAt: '2024-03-05',
+    updatedAt: '2024-03-15',
+    contactIds: ['1', '3', '4', '5', '6'],
+    tags: ['support', 'technical']
+  },
+  {
+    id: '4',
+    name: 'Executive Team',
+    description: 'Executive contacts across partner companies',
+    createdAt: '2024-02-28',
+    updatedAt: '2024-03-10',
+    contactIds: ['2', '3', '5'],
+    tags: ['executive', 'priority']
+  }
+];

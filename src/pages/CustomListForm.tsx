@@ -31,50 +31,11 @@ import {
   MenuItem,
   Select,
   FormHelperText,
-  Paper
+  Paper,
+  CircularProgress
 } from '@mui/material';
 import { ArrowLeft, Save, AlertTriangle, X, Check, Users, Building } from 'lucide-react';
-import { mockContacts } from '../data/mockData';
-
-// Mock data for custom lists
-const mockCustomLists = [
-  {
-    id: '1',
-    name: 'Sales Team Contacts',
-    description: 'Key contacts for the sales department',
-    createdAt: '2024-03-15',
-    updatedAt: '2024-03-20',
-    contactIds: ['1', '2', '4', '6'],
-    tags: ['sales', 'priority']
-  },
-  {
-    id: '2',
-    name: 'Marketing Partners',
-    description: 'External marketing agencies and partners',
-    createdAt: '2024-03-10',
-    updatedAt: '2024-03-18',
-    contactIds: ['3', '5'],
-    tags: ['marketing', 'external']
-  },
-  {
-    id: '3',
-    name: 'Technical Support',
-    description: 'Technical support contacts for all products',
-    createdAt: '2024-03-05',
-    updatedAt: '2024-03-15',
-    contactIds: ['1', '3', '4', '5', '6'],
-    tags: ['support', 'technical']
-  },
-  {
-    id: '4',
-    name: 'Executive Team',
-    description: 'Executive contacts across partner companies',
-    createdAt: '2024-02-28',
-    updatedAt: '2024-03-10',
-    contactIds: ['2', '3', '5'],
-    tags: ['executive', 'priority']
-  }
-];
+import mockApi from '../services/mockApi';
 
 const CustomListForm = () => {
   const { id } = useParams();
@@ -82,150 +43,168 @@ const CustomListForm = () => {
   const isEditMode = Boolean(id);
   
   // Form state
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [selectedContacts, setSelectedContacts] = useState([]);
-  const [tags, setTags] = useState([]);
-  const [tagInput, setTagInput] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    contactIds: [],
+    tags: []
+  });
   
   // Validation state
-  const [nameError, setNameError] = useState('');
-  const [hasMultipleCompanies, setHasMultipleCompanies] = useState(false);
-  const [companies, setCompanies] = useState([]);
+  const [errors, setErrors] = useState({});
   
-  // Dialog states
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  // API data states
+  const [contacts, setContacts] = useState([]);
+  const [customList, setCustomList] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
   
-  // Initialize form data if in edit mode
+  // Dialog state
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
+
+  // Fetch contacts and custom list (if in edit mode) from API
   useEffect(() => {
-    if (isEditMode) {
-      const customList = mockCustomLists.find(list => list.id === id);
-      if (customList) {
-        setName(customList.name);
-        setDescription(customList.description);
-        setSelectedContacts(customList.contactIds);
-        setTags(customList.tags);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch contacts
+        const contactsData = await mockApi.contacts.getAll();
+        setContacts(contactsData);
+        
+        // If in edit mode, fetch custom list details
+        if (isEditMode && id) {
+          const listData = await mockApi.customLists.getById(id);
+          setCustomList(listData);
+          setFormData({
+            name: listData.name,
+            description: listData.description,
+            contactIds: listData.contactIds,
+            tags: listData.tags
+          });
+        }
+        
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load data. Please try again later.');
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+
+    fetchData();
   }, [id, isEditMode]);
-  
-  // Check for multiple companies whenever selected contacts change
-  useEffect(() => {
-    if (selectedContacts.length > 0) {
-      const selectedContactsData = mockContacts.filter(contact => 
-        selectedContacts.includes(contact.id)
-      );
-      
-      const uniqueCompanies = [...new Set(selectedContactsData.map(contact => contact.company))];
-      setCompanies(uniqueCompanies);
-      setHasMultipleCompanies(uniqueCompanies.length > 1);
-    } else {
-      setCompanies([]);
-      setHasMultipleCompanies(false);
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
     }
-  }, [selectedContacts]);
-  
-  const handleNameChange = (e) => {
-    const value = e.target.value;
-    setName(value);
-    if (!value.trim()) {
-      setNameError('List name is required');
-    } else {
-      setNameError('');
+    
+    if (formData.contactIds.length === 0) {
+      newErrors.contactIds = 'At least one contact must be selected';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear error for this field if it exists
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
     }
   };
-  
-  const handleDescriptionChange = (e) => {
-    setDescription(e.target.value);
-  };
-  
+
   const handleContactsChange = (event) => {
-    const value = event.target.value;
-    setSelectedContacts(value);
-  };
-  
-  const handleAddTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
-      setTagInput('');
+    const { value } = event.target;
+    setFormData(prev => ({
+      ...prev,
+      contactIds: value
+    }));
+    
+    // Clear error for contacts if it exists
+    if (errors.contactIds) {
+      setErrors(prev => ({
+        ...prev,
+        contactIds: undefined
+      }));
     }
   };
-  
-  const handleDeleteTag = (tagToDelete) => {
-    setTags(tags.filter(tag => tag !== tagToDelete));
+
+  const handleTagsChange = (event, newValue) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: newValue
+    }));
   };
-  
-  const handleTagInputChange = (e) => {
-    setTagInput(e.target.value);
-  };
-  
-  const handleTagKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddTag();
-    }
-  };
-  
-  const handleCancel = () => {
-    // If form has changes, show confirmation dialog
-    if (name || description || selectedContacts.length > 0 || tags.length > 0) {
-      setCancelDialogOpen(true);
-    } else {
-      navigate('/custom-lists');
-    }
-  };
-  
-  const handleCancelConfirm = () => {
-    setCancelDialogOpen(false);
-    navigate('/custom-lists');
-  };
-  
-  const handleCancelDialogClose = () => {
-    setCancelDialogOpen(false);
-  };
-  
-  const handleSave = () => {
-    // Validate form
-    if (!name.trim()) {
-      setNameError('List name is required');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
       return;
     }
     
-    // If multiple companies, show confirmation dialog
-    if (hasMultipleCompanies) {
-      setSaveDialogOpen(true);
-    } else {
-      // Save directly if no warnings
-      saveList();
+    try {
+      setSubmitting(true);
+      
+      if (isEditMode) {
+        // Update existing list
+        await mockApi.customLists.update(id, formData);
+      } else {
+        // Create new list
+        await mockApi.customLists.create(formData);
+      }
+      
+      navigate('/custom-lists');
+    } catch (err) {
+      console.error('Error saving custom list:', err);
+      setError('Failed to save custom list. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
-  
-  const handleSaveConfirm = () => {
-    setSaveDialogOpen(false);
-    saveList();
+
+  const handleDiscard = () => {
+    setDiscardDialogOpen(true);
   };
-  
-  const handleSaveDialogClose = () => {
-    setSaveDialogOpen(false);
-  };
-  
-  const saveList = () => {
-    // In a real app, this would save to backend
-    console.log('Saving list:', {
-      id: isEditMode ? id : Date.now().toString(),
-      name,
-      description,
-      contactIds: selectedContacts,
-      tags,
-      createdAt: isEditMode ? mockCustomLists.find(list => list.id === id)?.createdAt : new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    });
-    
-    // Navigate back to list view
+
+  const handleDiscardConfirm = () => {
+    setDiscardDialogOpen(false);
     navigate('/custom-lists');
   };
-  
+
+  const handleDiscardCancel = () => {
+    setDiscardDialogOpen(false);
+  };
+
+  // Get all unique tags from contacts for suggestions
+  const tagSuggestions = React.useMemo(() => {
+    const allTags = contacts.flatMap(contact => contact.tags || []);
+    return [...new Set(allTags)];
+  }, [contacts]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -235,221 +214,224 @@ const CustomListForm = () => {
     >
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
-          {/* Header with back button */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
             <Button
               startIcon={<ArrowLeft size={16} />}
-              onClick={handleCancel}
+              onClick={() => navigate('/custom-lists')}
               sx={{ mr: 2 }}
             >
-              Back to Lists
+              Back
             </Button>
+            <Typography variant="h4" component="h1">
+              {isEditMode ? 'Edit Custom List' : 'Create Custom List'}
+            </Typography>
           </Box>
-          
-          {/* Form header */}
-          <Typography variant="h4" component="h1" sx={{ mb: 4 }}>
-            {isEditMode ? 'Edit Custom List' : 'Create New Custom List'}
-          </Typography>
-          
-          <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              {/* List name */}
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="List Name"
-                  value={name}
-                  onChange={handleNameChange}
-                  error={Boolean(nameError)}
-                  helperText={nameError}
-                  required
-                />
+              <Grid item xs={12} md={8}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      List Information
+                    </Typography>
+                    
+                    <TextField
+                      fullWidth
+                      label="List Name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      error={Boolean(errors.name)}
+                      helperText={errors.name}
+                      margin="normal"
+                      required
+                    />
+                    
+                    <TextField
+                      fullWidth
+                      label="Description"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      multiline
+                      rows={3}
+                      margin="normal"
+                    />
+                    
+                    <Autocomplete
+                      multiple
+                      freeSolo
+                      options={tagSuggestions}
+                      value={formData.tags}
+                      onChange={handleTagsChange}
+                      renderTags={(value, getTagProps) =>
+                        value.map((option, index) => (
+                          <Chip
+                            label={option}
+                            {...getTagProps({ index })}
+                            size="small"
+                          />
+                        ))
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Tags"
+                          placeholder="Add tags..."
+                          margin="normal"
+                          helperText="Press Enter to add a new tag"
+                        />
+                      )}
+                    />
+                  </CardContent>
+                </Card>
               </Grid>
               
-              {/* List description */}
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Description"
-                  value={description}
-                  onChange={handleDescriptionChange}
-                  multiline
-                  rows={3}
-                />
+              <Grid item xs={12} md={4}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      Actions
+                    </Typography>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="primary"
+                      startIcon={<Save size={16} />}
+                      type="submit"
+                      disabled={submitting}
+                      sx={{ mb: 2 }}
+                    >
+                      {submitting ? 'Saving...' : 'Save List'}
+                    </Button>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      onClick={handleDiscard}
+                      disabled={submitting}
+                    >
+                      Discard Changes
+                    </Button>
+                  </CardContent>
+                </Card>
               </Grid>
               
-              {/* Contact selection */}
               <Grid item xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel id="contacts-select-label">Select Contacts</InputLabel>
-                  <Select
-                    labelId="contacts-select-label"
-                    multiple
-                    value={selectedContacts}
-                    onChange={handleContactsChange}
-                    input={<OutlinedInput label="Select Contacts" />}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {selected.map((contactId) => {
-                          const contact = mockContacts.find(c => c.id === contactId);
-                          return contact ? (
-                            <Chip 
-                              key={contactId} 
-                              label={`${contact.firstName} ${contact.lastName}`} 
-                              size="small" 
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      Select Contacts
+                    </Typography>
+                    
+                    <FormControl 
+                      fullWidth 
+                      error={Boolean(errors.contactIds)}
+                      sx={{ mt: 2 }}
+                    >
+                      <InputLabel id="contacts-select-label">Contacts</InputLabel>
+                      <Select
+                        labelId="contacts-select-label"
+                        multiple
+                        value={formData.contactIds}
+                        onChange={handleContactsChange}
+                        input={<OutlinedInput label="Contacts" />}
+                        renderValue={(selected) => (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {selected.map((value) => {
+                              const contact = contacts.find(c => c.id === value);
+                              return contact ? (
+                                <Chip 
+                                  key={value} 
+                                  label={`${contact.firstName} ${contact.lastName}`} 
+                                  size="small" 
+                                />
+                              ) : null;
+                            })}
+                          </Box>
+                        )}
+                      >
+                        {contacts.map((contact) => (
+                          <MenuItem key={contact.id} value={contact.id}>
+                            <Checkbox checked={formData.contactIds.indexOf(contact.id) > -1} />
+                            <ListItemText 
+                              primary={`${contact.firstName} ${contact.lastName}`} 
+                              secondary={contact.company} 
                             />
-                          ) : null;
-                        })}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {errors.contactIds && (
+                        <FormHelperText>{errors.contactIds}</FormHelperText>
+                      )}
+                    </FormControl>
+                    
+                    {/* Preview selected contacts */}
+                    {formData.contactIds.length > 0 && (
+                      <Box sx={{ mt: 3 }}>
+                        <Typography variant="subtitle2" gutterBottom>
+                          Selected Contacts ({formData.contactIds.length})
+                        </Typography>
+                        <Grid container spacing={2}>
+                          {formData.contactIds.map(contactId => {
+                            const contact = contacts.find(c => c.id === contactId);
+                            if (!contact) return null;
+                            
+                            return (
+                              <Grid item xs={12} sm={6} md={4} key={contactId}>
+                                <Paper 
+                                  variant="outlined" 
+                                  sx={{ p: 1, display: 'flex', alignItems: 'center' }}
+                                >
+                                  <Avatar
+                                    src={contact.avatar}
+                                    alt={`${contact.firstName} ${contact.lastName}`}
+                                    sx={{ width: 32, height: 32, mr: 1 }}
+                                  />
+                                  <Box sx={{ flexGrow: 1 }}>
+                                    <Typography variant="body2">
+                                      {contact.firstName} {contact.lastName}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                      {contact.company}
+                                    </Typography>
+                                  </Box>
+                                </Paper>
+                              </Grid>
+                            );
+                          })}
+                        </Grid>
                       </Box>
                     )}
-                  >
-                    {mockContacts.map((contact) => (
-                      <MenuItem key={contact.id} value={contact.id}>
-                        <Checkbox checked={selectedContacts.includes(contact.id)} />
-                        <ListItemText 
-                          primary={`${contact.firstName} ${contact.lastName}`} 
-                          secondary={contact.company} 
-                        />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <FormHelperText>
-                    {selectedContacts.length} contacts selected
-                  </FormHelperText>
-                </FormControl>
+                  </CardContent>
+                </Card>
               </Grid>
-              
-              {/* Warning for multiple companies */}
-              {hasMultipleCompanies && (
-                <Grid item xs={12}>
-                  <Alert 
-                    severity="warning" 
-                    icon={<AlertTriangle size={16} />}
-                  >
-                    This list contains contacts from {companies.length} different companies: {companies.join(', ')}
-                  </Alert>
-                </Grid>
-              )}
-              
-              {/* Tags */}
-              <Grid item xs={12}>
-                <Box sx={{ mb: 1 }}>
-                  <Typography variant="subtitle2">Tags</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <TextField
-                    size="small"
-                    value={tagInput}
-                    onChange={handleTagInputChange}
-                    onKeyDown={handleTagKeyDown}
-                    placeholder="Add a tag"
-                    sx={{ mr: 1 }}
-                  />
-                  <Button 
-                    variant="outlined" 
-                    size="small" 
-                    onClick={handleAddTag}
-                    disabled={!tagInput.trim()}
-                  >
-                    Add
-                  </Button>
-                </Box>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {tags.map((tag) => (
-                    <Chip
-                      key={tag}
-                      label={tag}
-                      onDelete={() => handleDeleteTag(tag)}
-                      size="small"
-                    />
-                  ))}
-                </Box>
-              </Grid>
-              
-              {/* Summary */}
-              {selectedContacts.length > 0 && (
-                <Grid item xs={12}>
-                  <Card variant="outlined" sx={{ mt: 2 }}>
-                    <CardContent>
-                      <Typography variant="subtitle2" gutterBottom>
-                        List Summary
-                      </Typography>
-                      <Stack direction="row" spacing={3}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Users size={16} style={{ marginRight: 8, color: 'gray' }} />
-                          <Typography variant="body2">
-                            {selectedContacts.length} contacts
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Building size={16} style={{ marginRight: 8, color: 'gray' }} />
-                          <Typography variant="body2">
-                            {companies.length} companies
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              )}
             </Grid>
-          </Paper>
-          
-          {/* Action buttons */}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button
-              variant="outlined"
-              onClick={handleCancel}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<Save size={16} />}
-              onClick={handleSave}
-              disabled={!name.trim() || selectedContacts.length === 0}
-            >
-              {isEditMode ? 'Save Changes' : 'Create List'}
-            </Button>
-          </Box>
+          </form>
         </Box>
       </Container>
       
-      {/* Cancel Confirmation Dialog */}
+      {/* Discard Changes Dialog */}
       <Dialog
-        open={cancelDialogOpen}
-        onClose={handleCancelDialogClose}
+        open={discardDialogOpen}
+        onClose={handleDiscardCancel}
       >
-        <DialogTitle>Discard Changes?</DialogTitle>
+        <DialogTitle>Discard Changes</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            You have unsaved changes. Are you sure you want to discard them?
+            Are you sure you want to discard your changes? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelDialogClose}>No, Keep Editing</Button>
-          <Button onClick={handleCancelConfirm} color="error">
-            Yes, Discard
-          </Button>
-        </DialogActions>
-      </Dialog>
-      
-      {/* Save Confirmation Dialog for Multiple Companies */}
-      <Dialog
-        open={saveDialogOpen}
-        onClose={handleSaveDialogClose}
-      >
-        <DialogTitle>Confirm List with Multiple Companies</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            This list contains contacts from {companies.length} different companies: {companies.join(', ')}. 
-            Are you sure you want to continue?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleSaveDialogClose}>Cancel</Button>
-          <Button onClick={handleSaveConfirm} color="primary" variant="contained">
-            Confirm
+          <Button onClick={handleDiscardCancel}>Cancel</Button>
+          <Button onClick={handleDiscardConfirm} color="error" autoFocus>
+            Discard
           </Button>
         </DialogActions>
       </Dialog>

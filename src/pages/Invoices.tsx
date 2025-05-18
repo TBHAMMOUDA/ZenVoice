@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -23,11 +23,13 @@ import {
   IconButton,
   Tooltip,
   InputAdornment,
-  Menu
+  Menu,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import { Plus, Search, Filter, Link as LinkIcon, Calendar, DollarSign, ChevronDown, Download } from 'lucide-react';
-import { mockInvoices, mockOrders } from '../data/mockData';
 import { format } from 'date-fns';
+import mockApi from '../services/mockApi';
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -72,15 +74,45 @@ const Invoices = () => {
   const [endDate, setEndDate] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  
+  // API data states
+  const [invoices, setInvoices] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [invoicesData, ordersData] = await Promise.all([
+          mockApi.invoices.getAll(),
+          mockApi.orders.getAll()
+        ]);
+        
+        setInvoices(invoicesData);
+        setOrders(ordersData);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching invoices data:', err);
+        setError('Failed to load invoices. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Get unique suppliers for filter dropdown
   const suppliers = useMemo(() => {
-    return [...new Set(mockInvoices.map(invoice => invoice.supplier))].filter(Boolean);
-  }, []);
+    return [...new Set(invoices.map(invoice => invoice.supplier))].filter(Boolean);
+  }, [invoices]);
 
   // Filter invoices based on all criteria
   const filteredInvoices = useMemo(() => {
-    return mockInvoices.filter(invoice => {
+    return invoices.filter(invoice => {
       // Search term filter (ID, client, supplier, description)
       const matchesSearch = searchTerm === '' || 
         invoice.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -107,11 +139,11 @@ const Invoices = () => {
              matchesMinAmount && matchesMaxAmount && 
              matchesStartDate && matchesEndDate;
     });
-  }, [searchTerm, statusFilter, supplierFilter, minAmount, maxAmount, startDate, endDate]);
+  }, [invoices, searchTerm, statusFilter, supplierFilter, minAmount, maxAmount, startDate, endDate]);
 
   // Check if invoice has a linked order
   const hasLinkedOrder = (orderNumber) => {
-    return orderNumber && mockOrders.some(order => order.id === orderNumber);
+    return orderNumber && orders.some(order => order.id === orderNumber);
   };
 
   const handleSearchChange = (event) => {
@@ -169,6 +201,24 @@ const Invoices = () => {
     console.log('Exporting invoices...');
     handleMenuClose();
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg">
+        <Box sx={{ py: 4 }}>
+          <Alert severity="error">{error}</Alert>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <motion.div

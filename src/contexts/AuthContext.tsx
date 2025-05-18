@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { mockUsers } from '../data/mockData';
+import mockApi from '../services/mockApi';
 
 interface User {
   id: string;
@@ -49,28 +49,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Simulate API call with timeout
-    return new Promise<boolean>((resolve) => {
-      setTimeout(() => {
-        // Find user in mock data
-        const foundUser = mockUsers.find(
-          (u) => u.email === email && u.password === password
-        );
-        
-        if (foundUser) {
-          // Create user without password for storage
-          const { password: _, ...userWithoutPassword } = foundUser;
-          setUser(userWithoutPassword);
-          setIsAuthenticated(true);
-          localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-        
-        setIsLoading(false);
-      }, 800);
-    });
+    try {
+      // Use mock API for login
+      const response = await mockApi.users.login(email, password);
+      
+      if (response.user) {
+        setUser(response.user);
+        setIsAuthenticated(true);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
