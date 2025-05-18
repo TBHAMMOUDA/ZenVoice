@@ -492,18 +492,25 @@ const Settings = () => {
                             height: '100%',
                             '&:hover': {
                               boxShadow: 2
-                            },
-                            position: 'relative'
+                            }
                           }}
                         >
                           <CardContent sx={{ pb: 2 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                              <Chip 
-                                label={tag.name} 
-                                color="primary" 
-                                variant="outlined"
-                                sx={{ borderRadius: '4px' }}
-                              />
+                              <Tooltip 
+                                title={tag.description} 
+                                arrow 
+                                placement="top"
+                                enterDelay={500}
+                                leaveDelay={200}
+                              >
+                                <Chip 
+                                  label={tag.name} 
+                                  color="primary" 
+                                  variant="outlined"
+                                  sx={{ borderRadius: '4px' }}
+                                />
+                              </Tooltip>
                               <Box>
                                 <Tooltip title="Edit">
                                   <IconButton 
@@ -524,33 +531,6 @@ const Settings = () => {
                                   </IconButton>
                                 </Tooltip>
                               </Box>
-                            </Box>
-                            
-                            {/* Description shown on hover */}
-                            <Box 
-                              sx={{ 
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                bgcolor: 'rgba(0, 0, 0, 0.7)',
-                                color: 'white',
-                                p: 2,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                opacity: 0,
-                                transition: 'opacity 0.2s',
-                                '&:hover': {
-                                  opacity: 1
-                                },
-                                borderRadius: '4px'
-                              }}
-                            >
-                              <Typography variant="body2">
-                                {tag.description}
-                              </Typography>
                             </Box>
                           </CardContent>
                         </Card>
@@ -622,15 +602,22 @@ const Settings = () => {
                             height: '100%',
                             '&:hover': {
                               boxShadow: 2
-                            },
-                            position: 'relative'
+                            }
                           }}
                         >
                           <CardContent sx={{ pb: 2 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                              <Typography variant="h6">
-                                {service.name}
-                              </Typography>
+                              <Tooltip 
+                                title={service.description} 
+                                arrow 
+                                placement="top"
+                                enterDelay={500}
+                                leaveDelay={200}
+                              >
+                                <Typography variant="h6">
+                                  {service.name}
+                                </Typography>
+                              </Tooltip>
                               <Box>
                                 <Tooltip title="Edit">
                                   <IconButton 
@@ -651,33 +638,6 @@ const Settings = () => {
                                   </IconButton>
                                 </Tooltip>
                               </Box>
-                            </Box>
-                            
-                            {/* Description shown on hover */}
-                            <Box 
-                              sx={{ 
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                bgcolor: 'rgba(0, 0, 0, 0.7)',
-                                color: 'white',
-                                p: 2,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                opacity: 0,
-                                transition: 'opacity 0.2s',
-                                '&:hover': {
-                                  opacity: 1
-                                },
-                                borderRadius: '4px'
-                              }}
-                            >
-                              <Typography variant="body2">
-                                {service.description}
-                              </Typography>
                             </Box>
                           </CardContent>
                         </Card>
