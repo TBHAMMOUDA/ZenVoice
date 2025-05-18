@@ -40,6 +40,7 @@ const Contacts = () => {
   const [selectedCompanies, setSelectedCompanies] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Extract unique companies and tags from mockContacts
   const companies = useMemo(() => {
@@ -183,7 +184,7 @@ const Contacts = () => {
             </Stack>
           </Box>
 
-          {/* Filters section - aligned horizontally with reduced sizes */}
+          {/* Filters section - matching Invoices page style */}
           <Box sx={{ mb: 3 }}>
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} md={4}>
@@ -200,146 +201,189 @@ const Contacts = () => {
                 />
               </Grid>
               <Grid item xs={12} md={4}>
-                <Autocomplete
-                  multiple
-                  size="small"
-                  options={companies}
-                  value={selectedCompanies}
-                  onChange={handleCompanyChange}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder="Filter by company..."
-                      sx={{ '& .MuiInputBase-root': { fontSize: '0.9rem' } }}
-                    />
-                  )}
-                  sx={{ minWidth: 200 }}
-                />
+                <FormControl fullWidth size="small">
+                  <InputLabel id="contact-type-filter-label">Contact Type</InputLabel>
+                  <Select
+                    labelId="contact-type-filter-label"
+                    value={filter}
+                    label="Contact Type"
+                    onChange={(e) => handleFilterChange(null, e.target.value)}
+                    sx={{ '& .MuiInputBase-root': { fontSize: '0.9rem' } }}
+                  >
+                    <MenuItem value="all">All Contacts</MenuItem>
+                    <MenuItem value="synced">Synced</MenuItem>
+                    <MenuItem value="manual">Manual</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item xs={12} md={4}>
-                <ToggleButtonGroup
+                <Button
+                  fullWidth
+                  variant="outlined"
                   size="small"
-                  value={filter}
-                  exclusive
-                  onChange={handleFilterChange}
-                  aria-label="contact filter"
-                  sx={{ height: '40px' }}
+                  startIcon={<Filter size={16} />}
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  sx={{ height: '40px', fontSize: '0.85rem' }}
                 >
-                  <ToggleButton value="all" sx={{ fontSize: '0.85rem' }}>
-                    All
-                  </ToggleButton>
-                  <ToggleButton value="synced" sx={{ fontSize: '0.85rem' }}>
-                    Synced
-                  </ToggleButton>
-                  <ToggleButton value="manual" sx={{ fontSize: '0.85rem' }}>
-                    Manual
-                  </ToggleButton>
-                </ToggleButtonGroup>
+                  {showAdvancedFilters ? 'Hide Filters' : 'More Filters'}
+                </Button>
               </Grid>
             </Grid>
-          </Box>
 
-          {/* Tags filter section */}
-          <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {tags.map(tag => (
-              <Chip
-                key={tag}
-                label={tag}
-                clickable
-                color={selectedTags.includes(tag) ? "primary" : "default"}
-                onClick={() => handleTagToggle(tag)}
-                size="small"
-                sx={{ 
-                  borderRadius: '4px',
-                  height: '28px',
-                  fontSize: '0.8rem'
-                }}
-              />
-            ))}
-          </Box>
-
-          {/* Contacts grid with responsive layout */}
-          <Grid container spacing={3}>
-            {paginatedContacts.map((contact) => (
-              <Grid item xs={12} sm={6} md={3} key={contact.id}>
-                <Card sx={{ height: '100%' }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar
-                        src={contact.avatar}
-                        alt={`${contact.firstName} ${contact.lastName}`}
-                        sx={{ width: 56, height: 56, mr: 2 }}
-                      />
-                      <Box sx={{ flex: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="h6" sx={{ fontSize: '1rem' }}>
-                            {contact.firstName} {contact.lastName}
-                          </Typography>
-                          {contact.synced && (
-                            <Tooltip title="Synced Contact">
-                              <Check size={16} style={{ color: 'green' }} />
-                            </Tooltip>
-                          )}
-                        </Box>
-                        <Typography variant="body2" color="text.secondary">
-                          {contact.company}
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <Mail size={16} style={{ marginRight: 8 }} />
-                      <Typography variant="body2">{contact.email}</Typography>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <Phone size={16} style={{ marginRight: 8 }} />
-                      <Typography variant="body2">{contact.phone}</Typography>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Building size={16} style={{ marginRight: 8 }} />
-                      <Typography variant="body2">{contact.company}</Typography>
-                    </Box>
-
-                    {/* Display tags */}
-                    {contact.tags && contact.tags.length > 0 && (
-                      <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {contact.tags.map(tag => (
-                          <Chip 
-                            key={tag} 
-                            label={tag} 
-                            size="small" 
-                            sx={{ 
-                              height: '20px', 
-                              fontSize: '0.7rem',
-                              borderRadius: '4px'
-                            }} 
-                          />
-                        ))}
-                      </Box>
-                    )}
-                  </CardContent>
-                  <CardActions>
-                    <Button
+            {/* Advanced Filters */}
+            {showAdvancedFilters && (
+              <Box sx={{ mt: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={12}>
+                    <Autocomplete
+                      multiple
                       size="small"
-                      onClick={() => navigate(`/contacts/${contact.id}`)}
-                    >
-                      View Details
-                    </Button>
-                    {!contact.synced && (
-                      <Button
+                      options={companies}
+                      value={selectedCompanies}
+                      onChange={handleCompanyChange}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Companies"
+                          placeholder="Filter by company..."
+                          sx={{ '& .MuiInputBase-root': { fontSize: '0.9rem' } }}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Button 
+                        onClick={() => {
+                          setSearch('');
+                          setFilter('all');
+                          setSelectedCompanies([]);
+                          setSelectedTags([]);
+                          setPage(1);
+                        }}
                         size="small"
-                        color="primary"
-                        onClick={() => navigate(`/contacts/${contact.id}/edit`)}
                       >
-                        Edit
+                        Clear Filters
                       </Button>
-                    )}
-                  </CardActions>
-                </Card>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+          </Box>
+
+          {/* Contacts grid with responsive layout and tags list on the right */}
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={9}>
+              <Grid container spacing={3}>
+                {paginatedContacts.map((contact) => (
+                  <Grid item xs={12} sm={6} md={4} key={contact.id}>
+                    <Card sx={{ height: '100%' }}>
+                      <CardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <Avatar
+                            src={contact.avatar}
+                            alt={`${contact.firstName} ${contact.lastName}`}
+                            sx={{ width: 56, height: 56, mr: 2 }}
+                          />
+                          <Box sx={{ flex: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography variant="h6" sx={{ fontSize: '1rem' }}>
+                                {contact.firstName} {contact.lastName}
+                              </Typography>
+                              {contact.synced && (
+                                <Tooltip title="Synced Contact">
+                                  <Check size={16} style={{ color: 'green' }} />
+                                </Tooltip>
+                              )}
+                            </Box>
+                            <Typography variant="body2" color="text.secondary">
+                              {contact.company}
+                            </Typography>
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                          <Mail size={16} style={{ marginRight: 8 }} />
+                          <Typography variant="body2">{contact.email}</Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                          <Phone size={16} style={{ marginRight: 8 }} />
+                          <Typography variant="body2">{contact.phone}</Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Building size={16} style={{ marginRight: 8 }} />
+                          <Typography variant="body2">{contact.company}</Typography>
+                        </Box>
+
+                        {/* Display tags */}
+                        {contact.tags && contact.tags.length > 0 && (
+                          <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {contact.tags.map(tag => (
+                              <Chip 
+                                key={tag} 
+                                label={tag} 
+                                size="small" 
+                                sx={{ 
+                                  height: '20px', 
+                                  fontSize: '0.7rem',
+                                  borderRadius: '4px'
+                                }} 
+                              />
+                            ))}
+                          </Box>
+                        )}
+                      </CardContent>
+                      <CardActions>
+                        <Button
+                          size="small"
+                          onClick={() => navigate(`/contacts/${contact.id}`)}
+                        >
+                          View Details
+                        </Button>
+                        {!contact.synced && (
+                          <Button
+                            size="small"
+                            color="primary"
+                            onClick={() => navigate(`/contacts/${contact.id}/edit`)}
+                          >
+                            Edit
+                          </Button>
+                        )}
+                      </CardActions>
+                    </Card>
+                  </Grid>
+                ))}
               </Grid>
-            ))}
+            </Grid>
+            
+            {/* Tags list on the right */}
+            <Grid item xs={12} md={3}>
+              <Card elevation={2}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 2 }}>Tags</Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {tags.map(tag => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        clickable
+                        color={selectedTags.includes(tag) ? "primary" : "default"}
+                        onClick={() => handleTagToggle(tag)}
+                        size="small"
+                        sx={{ 
+                          borderRadius: '4px',
+                          height: '28px',
+                          fontSize: '0.8rem'
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
 
           {/* Enhanced pagination controls */}
