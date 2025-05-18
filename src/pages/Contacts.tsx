@@ -27,7 +27,7 @@ import {
   Menu,
   Stack
 } from '@mui/material';
-import { Plus, Phone, Mail, Building, Search, Check, UserPlus, Download, ChevronDown, List } from 'lucide-react';
+import { Plus, Phone, Mail, Building, Search, Check, UserPlus, Download, ChevronDown, List, Filter } from 'lucide-react';
 import { mockContacts } from '../data/mockData';
 
 const ITEMS_PER_PAGE = 25; // Increased from 6 to 25
