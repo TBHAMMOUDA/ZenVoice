@@ -1,0 +1,49 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+// Import translations
+import translationEN from './locales/en/translation.json';
+import translationFR from './locales/fr/translation.json';
+import translationDE from './locales/de/translation.json';
+
+// Resources object with translations
+const resources = {
+  en: {
+    translation: translationEN
+  },
+  fr: {
+    translation: translationFR
+  },
+  de: {
+    translation: translationDE
+  }
+};
+
+i18n
+  // Detect user language
+  .use(LanguageDetector)
+  // Pass the i18n instance to react-i18next
+  .use(initReactI18next)
+  // Initialize i18next
+  .init({
+    resources,
+    fallbackLng: 'en',
+    debug: process.env.NODE_ENV === 'development',
+    
+    interpolation: {
+      escapeValue: false, // React already escapes values
+    },
+    
+    // Language detection options
+    detection: {
+      // Order of detection methods
+      order: ['localStorage', 'navigator'],
+      // Cache user language in localStorage
+      caches: ['localStorage'],
+      // Key name for storing language in localStorage
+      lookupLocalStorage: 'i18nextLng',
+    }
+  });
+
+export default i18n;

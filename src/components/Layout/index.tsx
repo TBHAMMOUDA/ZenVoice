@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   Box, 
   Drawer, 
@@ -24,6 +25,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 
 const Layout = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, user } = useAuth();
@@ -56,10 +58,10 @@ const Layout = () => {
   ]);
 
   const menuItems = [
-    { text: 'Dashboard', icon: <LayoutDashboard size={24} />, path: '/' },
-    { text: 'Invoices', icon: <FileText size={24} />, path: '/invoices' },
-    { text: 'Orders', icon: <ShoppingCart size={24} />, path: '/orders' },
-    { text: 'Contacts', icon: <Users size={24} />, path: '/contacts' },
+    { text: t('navigation.dashboard'), icon: <LayoutDashboard size={24} />, path: '/' },
+    { text: t('navigation.invoices'), icon: <FileText size={24} />, path: '/invoices' },
+    { text: t('navigation.orders'), icon: <ShoppingCart size={24} />, path: '/orders' },
+    { text: t('navigation.contacts'), icon: <Users size={24} />, path: '/contacts' },
   ];
 
   const drawerWidth = 240;
@@ -69,7 +71,7 @@ const Layout = () => {
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            InvoicePro
+            {t('app.name')}
           </Typography>
           <IconButton onClick={toggleTheme} color="inherit">
             {mode === 'light' ? <Moon size={20} /> : <Sun size={20} />}
@@ -167,7 +169,7 @@ const Layout = () => {
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6">
-            Notifications
+            {t('notifications.title')}
           </Typography>
           <IconButton onClick={() => setNotificationDrawerOpen(false)}>
             <X size={20} />
@@ -235,7 +237,7 @@ const Layout = () => {
           </List>
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
-            <Typography color="text.secondary">No notifications</Typography>
+            <Typography color="text.secondary">{t('notifications.noNotifications')}</Typography>
           </Box>
         )}
         
@@ -250,7 +252,7 @@ const Layout = () => {
                 );
               }}
             >
-              Mark all as read
+              {t('notifications.markAllRead')}
             </Button>
           </Box>
         )}

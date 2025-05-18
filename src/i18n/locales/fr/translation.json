@@ -1,0 +1,211 @@
+{
+  "app": {
+    "name": "InvoicePro",
+    "tagline": "Simplifiez votre processus de facturation"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "add": "Ajouter",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "back": "Retour",
+    "actions": "Actions",
+    "confirm": "Confirmer",
+    "discard": "Abandonner",
+    "noResults": "Aucun résultat trouvé",
+    "clearFilters": "Effacer les filtres",
+    "moreFilters": "Plus de filtres",
+    "hideFilters": "Masquer les filtres",
+    "export": "Exporter",
+    "total": "Total",
+    "status": "Statut",
+    "date": "Date",
+    "amount": "Montant",
+    "all": "Tous"
+  },
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "invoices": "Factures",
+    "orders": "Commandes",
+    "contacts": "Contacts",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "logout": "Déconnexion",
+    "customLists": "Listes personnalisées"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "invoiceStats": "Factures",
+    "orderStats": "Commandes",
+    "invoiceTotal": "Total des factures",
+    "orderTotal": "Total des commandes",
+    "totalAmount": "Montant total de toutes les factures",
+    "orderTotalAmount": "Montant total de toutes les commandes",
+    "invoiceStatus": {
+      "received": "Reçue",
+      "toBePosted": "À publier",
+      "validated": "Validée",
+      "posted": "Publiée"
+    },
+    "orderStatus": {
+      "pending": "En attente",
+      "processing": "En traitement",
+      "completed": "Terminée"
+    },
+    "charts": {
+      "invoiceDistribution": "Répartition des statuts de factures",
+      "orderDistribution": "Répartition des statuts de commandes",
+      "monthlyComparison": "Comparaison mensuelle",
+      "count": "Nombre"
+    }
+  },
+  "invoices": {
+    "title": "Factures",
+    "createInvoice": "Ajouter une nouvelle facture",
+    "exportInvoices": "Exporter les factures",
+    "searchPlaceholder": "Rechercher des factures...",
+    "allStatuses": "Tous les statuts",
+    "noInvoices": "Aucune facture ne correspond aux filtres actuels",
+    "fields": {
+      "id": "ID de facture",
+      "client": "Client",
+      "supplier": "Fournisseur",
+      "amount": "Montant",
+      "status": "Statut",
+      "dueDate": "Date d'échéance",
+      "issuedDate": "Date d'émission",
+      "order": "Commande",
+      "actions": "Actions",
+      "minAmount": "Montant min",
+      "maxAmount": "Montant max",
+      "startDate": "Date de début",
+      "endDate": "Date de fin"
+    }
+  },
+  "orders": {
+    "title": "Commandes",
+    "createOrder": "Ajouter une nouvelle commande",
+    "exportOrders": "Exporter les commandes",
+    "searchPlaceholder": "Rechercher des commandes...",
+    "allStatuses": "Tous les statuts",
+    "noOrders": "Aucune commande ne correspond aux filtres actuels",
+    "fields": {
+      "id": "ID de commande",
+      "customer": "Client",
+      "total": "Total",
+      "status": "Statut",
+      "orderDate": "Date de commande",
+      "items": "Articles",
+      "actions": "Actions"
+    },
+    "itemCount": "{{count}} articles"
+  },
+  "contacts": {
+    "title": "Contacts",
+    "createContact": "Ajouter un nouveau contact",
+    "exportContacts": "Exporter les contacts",
+    "searchPlaceholder": "Rechercher nom, email, téléphone...",
+    "contactType": "Type de contact",
+    "allContacts": "Tous les contacts",
+    "synced": "Synchronisé",
+    "manual": "Manuel",
+    "noContacts": "Aucun contact ne correspond aux filtres actuels",
+    "viewDetails": "Voir les détails",
+    "companies": "Entreprises",
+    "filterByCompany": "Filtrer par entreprise...",
+    "tags": "Tags"
+  },
+  "customLists": {
+    "title": "Listes personnalisées",
+    "createList": "Créer une liste",
+    "searchPlaceholder": "Rechercher des listes...",
+    "noLists": "Aucune liste personnalisée trouvée. Créez votre première liste pour commencer.",
+    "editList": "Modifier la liste personnalisée",
+    "listInformation": "Informations de la liste",
+    "listName": "Nom de la liste",
+    "description": "Description",
+    "tags": "Tags",
+    "addTags": "Ajouter des tags...",
+    "pressEnter": "Appuyez sur Entrée pour ajouter un nouveau tag",
+    "selectContacts": "Sélectionner des contacts",
+    "selectedContacts": "Contacts sélectionnés",
+    "contactCount": "{{count}} contacts",
+    "companyCount": "{{count}} entreprises",
+    "noCompanies": "Aucune entreprise",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ? Cette action ne peut pas être annulée.",
+    "discardConfirm": "Êtes-vous sûr de vouloir abandonner vos modifications ? Cette action ne peut pas être annulée."
+  },
+  "settings": {
+    "title": "Paramètres",
+    "tabs": {
+      "tags": "Tags",
+      "companyServices": "Services de l'entreprise"
+    },
+    "tags": {
+      "title": "Gérer les tags",
+      "description": "Les tags vous aident à catégoriser et filtrer les contacts, factures et autres éléments du système.",
+      "addTag": "Ajouter un nouveau tag",
+      "filterTags": "Filtrer les tags...",
+      "tagName": "Nom du tag",
+      "tagDescription": "Description du tag",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce tag ? Cela peut affecter les éléments qui utilisent ce tag."
+    },
+    "services": {
+      "title": "Gérer les services de l'entreprise",
+      "description": "Définissez les services que votre entreprise offre aux clients.",
+      "addService": "Ajouter un nouveau service",
+      "filterServices": "Filtrer les services...",
+      "serviceName": "Nom du service",
+      "serviceDescription": "Description du service",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce service ? Cela peut affecter les éléments qui utilisent ce service."
+    },
+    "language": {
+      "title": "Paramètres de langue",
+      "selectLanguage": "Sélectionner la langue",
+      "useSystemLanguage": "Utiliser la langue du navigateur",
+      "english": "Anglais",
+      "french": "Français",
+      "german": "Allemand"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Marquer tout comme lu",
+    "noNotifications": "Aucune notification"
+  },
+  "auth": {
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "signIn": "Se connecter",
+    "invalidCredentials": "Email ou mot de passe invalide"
+  },
+  "profile": {
+    "title": "Profil",
+    "personalInfo": "Informations personnelles",
+    "name": "Nom",
+    "email": "Email",
+    "phone": "Téléphone",
+    "role": "Rôle",
+    "company": "Entreprise",
+    "updateProfile": "Mettre à jour le profil"
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "invalidEmail": "Veuillez entrer une adresse email valide",
+    "minLength": "Doit contenir au moins {{count}} caractères",
+    "maxLength": "Doit contenir au maximum {{count}} caractères",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "invalidAmount": "Veuillez entrer un montant valide",
+    "invalidDate": "Veuillez entrer une date valide",
+    "atLeastOne": "Veuillez sélectionner au moins un {{field}}"
+  }
+}

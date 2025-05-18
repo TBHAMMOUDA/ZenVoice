@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { 
   Box, 
   Typography, 
@@ -22,7 +23,46 @@ import {
   Tab,
   Tabs,
   Pagination,
-  InputAdornment
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControlLabel,
+  Switch
+} from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { 
+  Box, 
+  Typography, 
+  Container, 
+  Paper, 
+  Grid, 
+  Divider, 
+  Card, 
+  CardContent,
+  Button,
+  Chip,
+  TextField,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Tooltip,
+  Tab,
+  Tabs,
+  Pagination,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControlLabel,
+  Switch
 } from '@mui/material';
 import { 
   Tag, 
@@ -34,9 +74,11 @@ import {
   Info, 
   Settings as SettingsIcon,
   Briefcase,
-  Search
+  Search,
+  Globe
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // Mock data for tags and services
 const initialTags = [
@@ -228,7 +270,9 @@ const initialServices = [
 const ITEMS_PER_PAGE = 25;
 
 const Settings = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
+  const { currentLanguage, changeLanguage, useSystemLanguage, setUseSystemLanguage } = useLanguage();
   const [tabValue, setTabValue] = useState(0);
   
   // Tags state
@@ -404,12 +448,22 @@ const Settings = () => {
     setServicePage(value);
   };
 
+  // Language handlers
+  const handleLanguageChange = (event) => {
+    const newLang = event.target.value;
+    changeLanguage(newLang);
+  };
+
+  const handleSystemLanguageToggle = (event) => {
+    setUseSystemLanguage(event.target.checked);
+  };
+
   if (!user) {
     return (
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="h5" color="error">
-            User information not available
+            {t('common.error')}
           </Typography>
         </Box>
       </Container>
@@ -426,7 +480,7 @@ const Settings = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
           <Typography variant="h4" component="h1" sx={{ mb: 4 }}>
-            Settings
+            {t('settings.title')}
           </Typography>
 
           <Paper sx={{ mb: 4 }}>
@@ -438,12 +492,17 @@ const Settings = () => {
             >
               <Tab 
                 icon={<Tag size={16} />} 
-                label="Tags" 
+                label={t('settings.tabs.tags')} 
                 iconPosition="start" 
               />
               <Tab 
                 icon={<Briefcase size={16} />} 
-                label="Company Services" 
+                label={t('settings.tabs.companyServices')} 
+                iconPosition="start" 
+              />
+              <Tab 
+                icon={<Globe size={16} />} 
+                label={t('settings.language.title')} 
                 iconPosition="start" 
               />
             </Tabs>
@@ -453,15 +512,15 @@ const Settings = () => {
               {tabValue === 0 && (
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Manage Tags
+                    {t('settings.tags.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" paragraph>
-                    Tags help you categorize and filter contacts, invoices, and other items in the system.
+                    {t('settings.tags.description')}
                   </Typography>
 
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
                     <TextField
-                      placeholder="Filter tags..."
+                      placeholder={t('settings.tags.filterTags')}
                       value={tagFilter}
                       onChange={handleTagFilterChange}
                       size="small"
@@ -479,7 +538,7 @@ const Settings = () => {
                       startIcon={<Plus size={16} />}
                       onClick={handleAddTag}
                     >
-                      Add New Tag
+                      {t('settings.tags.addTag')}
                     </Button>
                   </Box>
 
@@ -501,6 +560,323 @@ const Settings = () => {
                                 title={tag.description} 
                                 arrow 
                                 placement="top"
+                                enterDelay={500}
+                                leaveDelay={200}
+                              >
+                                <Chip 
+                                  label={tag.name} 
+                                  size="small" 
+                                  color="primary" 
+                                  variant="outlined"
+                                />
+                              </Tooltip>
+                              <Box>
+                                <IconButton 
+                                  size="small" 
+                                  onClick={() => handleEditTag(tag)}
+                                  sx={{ mr: 0.5 }}
+                                >
+                                  <Edit size={16} />
+                                </IconButton>
+                                <IconButton 
+                                  size="small" 
+                                  color="error" 
+                                  onClick={() => handleTagDelete(tag)}
+                                >
+                                  <Trash2 size={16} />
+                                </IconButton>
+                              </Box>
+                            </Box>
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary" 
+                              sx={{ 
+                                mt: 1,
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
+                              }}
+                            >
+                              {tag.description}
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+
+                  {filteredTags.length > ITEMS_PER_PAGE && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                      <Pagination 
+                        count={Math.ceil(filteredTags.length / ITEMS_PER_PAGE)} 
+                        page={tagPage} 
+                        onChange={handleTagPageChange} 
+                        color="primary" 
+                      />
+                    </Box>
+                  )}
+
+                  {filteredTags.length === 0 && (
+                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                      <Typography variant="body1" color="text.secondary">
+                        {t('common.noResults')}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              )}
+
+              {/* Company Services Section */}
+              {tabValue === 1 && (
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    {t('settings.services.title')}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" paragraph>
+                    {t('settings.services.description')}
+                  </Typography>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                    <TextField
+                      placeholder={t('settings.services.filterServices')}
+                      value={serviceFilter}
+                      onChange={handleServiceFilterChange}
+                      size="small"
+                      sx={{ width: '300px' }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Search size={18} />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                    <Button
+                      variant="outlined"
+                      startIcon={<Plus size={16} />}
+                      onClick={handleAddService}
+                    >
+                      {t('settings.services.addService')}
+                    </Button>
+                  </Box>
+
+                  <Grid container spacing={2}>
+                    {paginatedServices.map((service) => (
+                      <Grid item xs={12} sm={6} key={service.id}>
+                        <Card 
+                          variant="outlined" 
+                          sx={{ 
+                            height: '100%',
+                            '&:hover': {
+                              boxShadow: 2
+                            }
+                          }}
+                        >
+                          <CardContent>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                              <Typography variant="h6" component="h3">
+                                {service.name}
+                              </Typography>
+                              <Box>
+                                <IconButton 
+                                  size="small" 
+                                  onClick={() => handleEditService(service)}
+                                  sx={{ mr: 0.5 }}
+                                >
+                                  <Edit size={16} />
+                                </IconButton>
+                                <IconButton 
+                                  size="small" 
+                                  color="error" 
+                                  onClick={() => handleServiceDelete(service)}
+                                >
+                                  <Trash2 size={16} />
+                                </IconButton>
+                              </Box>
+                            </Box>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                              {service.description}
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+
+                  {filteredServices.length > ITEMS_PER_PAGE && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                      <Pagination 
+                        count={Math.ceil(filteredServices.length / ITEMS_PER_PAGE)} 
+                        page={servicePage} 
+                        onChange={handleServicePageChange} 
+                        color="primary" 
+                      />
+                    </Box>
+                  )}
+
+                  {filteredServices.length === 0 && (
+                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                      <Typography variant="body1" color="text.secondary">
+                        {t('common.noResults')}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              )}
+
+              {/* Language Settings Section */}
+              {tabValue === 2 && (
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    {t('settings.language.title')}
+                  </Typography>
+                  
+                  <Card sx={{ mb: 3 }}>
+                    <CardContent>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={useSystemLanguage}
+                            onChange={handleSystemLanguageToggle}
+                            color="primary"
+                          />
+                        }
+                        label={t('settings.language.useSystemLanguage')}
+                        sx={{ mb: 2 }}
+                      />
+                      
+                      <FormControl fullWidth disabled={useSystemLanguage}>
+                        <InputLabel id="language-select-label">{t('settings.language.selectLanguage')}</InputLabel>
+                        <Select
+                          labelId="language-select-label"
+                          value={currentLanguage}
+                          onChange={handleLanguageChange}
+                          label={t('settings.language.selectLanguage')}
+                        >
+                          <MenuItem value="en">{t('settings.language.english')}</MenuItem>
+                          <MenuItem value="fr">{t('settings.language.french')}</MenuItem>
+                          <MenuItem value="de">{t('settings.language.german')}</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </CardContent>
+                  </Card>
+                  
+                  <Typography variant="body2" color="text.secondary">
+                    {useSystemLanguage 
+                      ? t('settings.language.useSystemLanguage') 
+                      : t('settings.language.selectLanguage')}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Paper>
+        </Box>
+      </Container>
+      
+      {/* Tag Dialog */}
+      <Dialog open={tagDialogOpen} onClose={() => setTagDialogOpen(false)}>
+        <DialogTitle>
+          {isTagEditMode ? t('common.edit') : t('common.add')} {t('settings.tabs.tags')}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            name="name"
+            label={t('settings.tags.tagName')}
+            type="text"
+            fullWidth
+            value={currentTag.name}
+            onChange={handleTagInputChange}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            name="description"
+            label={t('settings.tags.tagDescription')}
+            type="text"
+            fullWidth
+            multiline
+            rows={3}
+            value={currentTag.description}
+            onChange={handleTagInputChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setTagDialogOpen(false)}>{t('common.cancel')}</Button>
+          <Button onClick={handleTagSave} color="primary">{t('common.save')}</Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Tag Delete Confirmation Dialog */}
+      <Dialog open={tagDeleteConfirmOpen} onClose={() => setTagDeleteConfirmOpen(false)}>
+        <DialogTitle>{t('common.delete')} {t('settings.tabs.tags')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t('settings.tags.deleteConfirm')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setTagDeleteConfirmOpen(false)}>{t('common.cancel')}</Button>
+          <Button onClick={confirmTagDelete} color="error">{t('common.delete')}</Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Service Dialog */}
+      <Dialog open={serviceDialogOpen} onClose={() => setServiceDialogOpen(false)}>
+        <DialogTitle>
+          {isServiceEditMode ? t('common.edit') : t('common.add')} {t('settings.tabs.companyServices')}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            name="name"
+            label={t('settings.services.serviceName')}
+            type="text"
+            fullWidth
+            value={currentService.name}
+            onChange={handleServiceInputChange}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            name="description"
+            label={t('settings.services.serviceDescription')}
+            type="text"
+            fullWidth
+            multiline
+            rows={3}
+            value={currentService.description}
+            onChange={handleServiceInputChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setServiceDialogOpen(false)}>{t('common.cancel')}</Button>
+          <Button onClick={handleServiceSave} color="primary">{t('common.save')}</Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Service Delete Confirmation Dialog */}
+      <Dialog open={serviceDeleteConfirmOpen} onClose={() => setServiceDeleteConfirmOpen(false)}>
+        <DialogTitle>{t('common.delete')} {t('settings.tabs.companyServices')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t('settings.services.deleteConfirm')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setServiceDeleteConfirmOpen(false)}>{t('common.cancel')}</Button>
+          <Button onClick={confirmServiceDelete} color="error">{t('common.delete')}</Button>
+        </DialogActions>
+      </Dialog>
+    </motion.div>
+  );
+};
+
+export default Settings;
                                 enterDelay={500}
                                 leaveDelay={200}
                               >
