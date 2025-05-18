@@ -20,6 +20,8 @@ import CustomListDetail from './pages/CustomListDetail';
 import CustomListForm from './pages/CustomListForm';
 import { useAuth } from './contexts/AuthContext';
 import { useTheme } from './contexts/ThemeContext';
+import Profile from './pages/Profile.tsx';
+import Settings from './pages/Settings.tsx';
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -43,6 +45,8 @@ function App() {
           
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
             <Route path="invoices" element={<Invoices />} />
             <Route path="invoices/:id" element={<InvoiceDetails />} />
             <Route path="invoices/create" element={<CreateInvoice />} />
