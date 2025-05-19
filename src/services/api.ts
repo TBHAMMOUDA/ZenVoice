@@ -48,7 +48,12 @@ export interface CreateCompanyDto {
   categoryId?: number;
   serviceIds?: number[];
 }
-export enum CompanyStatus { 0, 1, 2, 3 }
+export enum CompanyStatus { 
+    Active,
+    Inactive,
+    Archived,
+    Pending
+}
 export interface UpdateCompanyDto {
   id?: number;
   name: string;
@@ -76,7 +81,12 @@ export interface ContactDto {
   tags?: TagDto[];
 }
 export interface CreateContactDto { name: string; email: string; phone?: string; companyId?: number; tags?: TagDto[]; }
-export enum ContactStatus { 0, 1, 2, 3 }
+export enum ContactStatus { 
+    Active,
+    Inactive,
+    Archived,
+    Pending
+}
 export interface ChangeStatusContactDto { id: number; status: ContactStatus; }
 export interface ExternalContactDto { externalId: number; name: string; email: string; phone?: string; companyId: number; }
 export interface ExternalSyncContactDto { id: number; contacts?: ExternalContactDto[]; }
