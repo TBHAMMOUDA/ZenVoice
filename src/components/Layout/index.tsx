@@ -20,7 +20,7 @@ import {
   Button,
   Divider
 } from '@mui/material';
-import { LayoutDashboard, FileText, ShoppingCart, Users, LogOut, Sun, Moon, Settings, Bell, X } from 'lucide-react';
+import { LayoutDashboard, FileText, ShoppingCart, Users, LogOut, Sun, Moon, Settings, Bell, X, Building } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -62,6 +62,8 @@ const Layout = () => {
     { text: t('navigation.invoices'), icon: <FileText size={24} />, path: '/invoices' },
     { text: t('navigation.orders'), icon: <ShoppingCart size={24} />, path: '/orders' },
     { text: t('navigation.contacts'), icon: <Users size={24} />, path: '/contacts' },
+    { text: 'navigation.companies', icon: <Building size={24} />, path: '/companies' },
+
   ];
 
   const drawerWidth = 240;
