@@ -15,8 +15,13 @@ import ContactDetails from './pages/ContactDetails.tsx';
 import CreateContact from './pages/CreateContact.tsx';
 import Login from './pages/Login.tsx';
 import NotFound from './pages/NotFound.tsx';
+import CustomLists from './pages/CustomLists';
+import CustomListDetail from './pages/CustomListDetail';
+import CustomListForm from './pages/CustomListForm';
 import { useAuth } from './contexts/AuthContext';
 import { useTheme } from './contexts/ThemeContext';
+import Profile from './pages/Profile.tsx';
+import Settings from './pages/Settings.tsx';
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -40,6 +45,8 @@ function App() {
           
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
             <Route path="invoices" element={<Invoices />} />
             <Route path="invoices/:id" element={<InvoiceDetails />} />
             <Route path="invoices/create" element={<CreateInvoice />} />
@@ -48,6 +55,10 @@ function App() {
             <Route path="contacts" element={<Contacts />} />
             <Route path="contacts/:id" element={<ContactDetails />} />
             <Route path="contacts/create" element={<CreateContact />} />
+            <Route path="custom-lists" element={<CustomLists />} />
+            <Route path="custom-lists/:id" element={<CustomListDetail />} />
+            <Route path="custom-lists/create" element={<CustomListForm />} />
+            <Route path="custom-lists/:id/edit" element={<CustomListForm />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />

@@ -2,8 +2,8 @@ export const mockUsers = [
   {
     id: '1',
     name: 'John Doe',
-    email: 'john.doe@example.com',
-    password: 'password123',
+    email: 'taha.hammouda@gmail.com',
+    password: '123456',
     role: 'admin',
     avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=300'
   },
@@ -116,29 +116,67 @@ export const mockInvoices = [
   {
     id: 'INV-2024-001',
     clientName: 'Tech Solutions Inc.',
+    supplier: 'Acme Supplies',
     amount: 2500.00,
-    status: 'paid',
+    status: 'posted',
     dueDate: '2024-03-15',
     issuedDate: '2024-02-15',
-    description: 'Web Development Services - February 2024'
+    description: 'Web Development Services - February 2024',
+    orderNumber: 'ORD-2024-001',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    fileType: 'pdf'
   },
   {
     id: 'INV-2024-002',
     clientName: 'Digital Dynamics LLC',
+    supplier: 'Global Tech Partners',
     amount: 1800.00,
-    status: 'pending',
+    status: 'validated',
     dueDate: '2024-03-30',
     issuedDate: '2024-03-01',
-    description: 'UI/UX Design Services - March 2024'
+    description: 'UI/UX Design Services - March 2024',
+    orderNumber: 'ORD-2024-002',
+    fileUrl: 'https://filesamples.com/samples/document/xml/sample_3.xml',
+    fileType: 'xml'
   },
   {
     id: 'INV-2024-003',
     clientName: 'Innovative Systems Corp',
+    supplier: 'Tech Innovations Inc',
     amount: 3200.00,
-    status: 'overdue',
+    status: 'to_be_posted',
     dueDate: '2024-02-28',
     issuedDate: '2024-01-28',
-    description: 'Software Consulting - January 2024'
+    description: 'Software Consulting - January 2024',
+    orderNumber: null,
+    fileUrl: null,
+    fileType: null
+  },
+  {
+    id: 'INV-2024-004',
+    clientName: 'Creative Design Co',
+    supplier: 'Design Solutions Ltd',
+    amount: 950.00,
+    status: 'received',
+    dueDate: '2024-04-15',
+    issuedDate: '2024-03-15',
+    description: 'Logo Design and Branding - March 2024',
+    orderNumber: null,
+    fileUrl: 'https://example.com/invoices/INV-2024-004.jpg',
+    fileType: 'image'
+  },
+  {
+    id: 'INV-2024-005',
+    clientName: 'Security First Inc',
+    supplier: 'Secure Systems Co',
+    amount: 4500.00,
+    status: 'received',
+    dueDate: '2024-04-20',
+    issuedDate: '2024-03-20',
+    description: 'Security Audit Services - March 2024',
+    orderNumber: 'ORD-2024-003',
+    fileUrl: null,
+    fileType: null
   }
 ];
 
@@ -172,5 +210,44 @@ export const mockOrders = [
     items: [
       { name: 'Basic Package', quantity: 1, price: 599.99 }
     ]
+  }
+];
+
+export const mockCustomLists = [
+  {
+    id: '1',
+    name: 'Sales Team Contacts',
+    description: 'Key contacts for the sales department',
+    createdAt: '2024-03-15',
+    updatedAt: '2024-03-20',
+    contactIds: ['1', '2', '4', '6'],
+    tags: ['sales', 'priority']
+  },
+  {
+    id: '2',
+    name: 'Marketing Partners',
+    description: 'External marketing agencies and partners',
+    createdAt: '2024-03-10',
+    updatedAt: '2024-03-18',
+    contactIds: ['3', '5'],
+    tags: ['marketing', 'external']
+  },
+  {
+    id: '3',
+    name: 'Technical Support',
+    description: 'Technical support contacts for all products',
+    createdAt: '2024-03-05',
+    updatedAt: '2024-03-15',
+    contactIds: ['1', '3', '4', '5', '6'],
+    tags: ['support', 'technical']
+  },
+  {
+    id: '4',
+    name: 'Executive Team',
+    description: 'Executive contacts across partner companies',
+    createdAt: '2024-02-28',
+    updatedAt: '2024-03-10',
+    contactIds: ['2', '3', '5'],
+    tags: ['executive', 'priority']
   }
 ];

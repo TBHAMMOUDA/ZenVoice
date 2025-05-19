@@ -1,0 +1,211 @@
+{
+  "app": {
+    "name": "InvoicePro",
+    "tagline": "Streamline your invoicing process"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "back": "Back",
+    "actions": "Actions",
+    "confirm": "Confirm",
+    "discard": "Discard",
+    "noResults": "No results found",
+    "clearFilters": "Clear Filters",
+    "moreFilters": "More Filters",
+    "hideFilters": "Hide Filters",
+    "export": "Export",
+    "total": "Total",
+    "status": "Status",
+    "date": "Date",
+    "amount": "Amount",
+    "all": "All"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "invoices": "Invoices",
+    "orders": "Orders",
+    "contacts": "Contacts",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout",
+    "customLists": "Custom Lists"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "invoiceStats": "Invoices",
+    "orderStats": "Orders",
+    "invoiceTotal": "Invoice Total",
+    "orderTotal": "Order Total",
+    "totalAmount": "Total amount across all invoices",
+    "orderTotalAmount": "Total amount across all orders",
+    "invoiceStatus": {
+      "received": "Received",
+      "toBePosted": "To Be Posted",
+      "validated": "Validated",
+      "posted": "Posted"
+    },
+    "orderStatus": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed": "Completed"
+    },
+    "charts": {
+      "invoiceDistribution": "Invoice Status Distribution",
+      "orderDistribution": "Order Status Distribution",
+      "monthlyComparison": "Monthly Comparison",
+      "count": "Count"
+    }
+  },
+  "invoices": {
+    "title": "Invoices",
+    "createInvoice": "Add New Invoice",
+    "exportInvoices": "Export Invoices",
+    "searchPlaceholder": "Search invoices...",
+    "allStatuses": "All Statuses",
+    "noInvoices": "No invoices found matching the current filters",
+    "fields": {
+      "id": "Invoice ID",
+      "client": "Client",
+      "supplier": "Supplier",
+      "amount": "Amount",
+      "status": "Status",
+      "dueDate": "Due Date",
+      "issuedDate": "Issued Date",
+      "order": "Order",
+      "actions": "Actions",
+      "minAmount": "Min Amount",
+      "maxAmount": "Max Amount",
+      "startDate": "Start Date",
+      "endDate": "End Date"
+    }
+  },
+  "orders": {
+    "title": "Orders",
+    "createOrder": "Add New Order",
+    "exportOrders": "Export Orders",
+    "searchPlaceholder": "Search orders...",
+    "allStatuses": "All Statuses",
+    "noOrders": "No orders found matching the current filters",
+    "fields": {
+      "id": "Order ID",
+      "customer": "Customer",
+      "total": "Total",
+      "status": "Status",
+      "orderDate": "Order Date",
+      "items": "Items",
+      "actions": "Actions"
+    },
+    "itemCount": "{{count}} items"
+  },
+  "contacts": {
+    "title": "Contacts",
+    "createContact": "Add New Contact",
+    "exportContacts": "Export Contacts",
+    "searchPlaceholder": "Search name, email, phone...",
+    "contactType": "Contact Type",
+    "allContacts": "All Contacts",
+    "synced": "Synced",
+    "manual": "Manual",
+    "noContacts": "No contacts found matching the current filters",
+    "viewDetails": "View Details",
+    "companies": "Companies",
+    "filterByCompany": "Filter by company...",
+    "tags": "Tags"
+  },
+  "customLists": {
+    "title": "Custom Lists",
+    "createList": "Create List",
+    "searchPlaceholder": "Search lists...",
+    "noLists": "No custom lists found. Create your first list to get started.",
+    "editList": "Edit Custom List",
+    "listInformation": "List Information",
+    "listName": "List Name",
+    "description": "Description",
+    "tags": "Tags",
+    "addTags": "Add tags...",
+    "pressEnter": "Press Enter to add a new tag",
+    "selectContacts": "Select Contacts",
+    "selectedContacts": "Selected Contacts",
+    "contactCount": "{{count}} contacts",
+    "companyCount": "{{count}} companies",
+    "noCompanies": "No companies",
+    "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+    "discardConfirm": "Are you sure you want to discard your changes? This action cannot be undone."
+  },
+  "settings": {
+    "title": "Settings",
+    "tabs": {
+      "tags": "Tags",
+      "companyServices": "Company Services"
+    },
+    "tags": {
+      "title": "Manage Tags",
+      "description": "Tags help you categorize and filter contacts, invoices, and other items in the system.",
+      "addTag": "Add New Tag",
+      "filterTags": "Filter tags...",
+      "tagName": "Tag Name",
+      "tagDescription": "Tag Description",
+      "deleteConfirm": "Are you sure you want to delete this tag? This may affect items that use this tag."
+    },
+    "services": {
+      "title": "Manage Company Services",
+      "description": "Define the services your company offers to clients.",
+      "addService": "Add New Service",
+      "filterServices": "Filter services...",
+      "serviceName": "Service Name",
+      "serviceDescription": "Service Description",
+      "deleteConfirm": "Are you sure you want to delete this service? This may affect items that use this service."
+    },
+    "language": {
+      "title": "Language Settings",
+      "selectLanguage": "Select Language",
+      "useSystemLanguage": "Use browser language",
+      "english": "English",
+      "french": "French",
+      "german": "German"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No notifications"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "signIn": "Sign In",
+    "invalidCredentials": "Invalid email or password"
+  },
+  "profile": {
+    "title": "Profile",
+    "personalInfo": "Personal Information",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "role": "Role",
+    "company": "Company",
+    "updateProfile": "Update Profile"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "minLength": "Must be at least {{count}} characters",
+    "maxLength": "Must be at most {{count}} characters",
+    "passwordMismatch": "Passwords do not match",
+    "invalidAmount": "Please enter a valid amount",
+    "invalidDate": "Please enter a valid date",
+    "atLeastOne": "Please select at least one {{field}}"
+  }
+}
