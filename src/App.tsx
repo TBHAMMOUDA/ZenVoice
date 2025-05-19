@@ -22,6 +22,7 @@ import { useAuth } from './contexts/AuthContext';
 import { useTheme } from './contexts/ThemeContext';
 import Profile from './pages/Profile.tsx';
 import Settings from './pages/Settings.tsx';
+import Companies from './pages/Companies.tsx';
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -59,6 +60,8 @@ function App() {
             <Route path="custom-lists/:id" element={<CustomListDetail />} />
             <Route path="custom-lists/create" element={<CustomListForm />} />
             <Route path="custom-lists/:id/edit" element={<CustomListForm />} />
+            <Route path="companies" element={<Companies />} />
+
           </Route>
           
           <Route path="*" element={<NotFound />} />

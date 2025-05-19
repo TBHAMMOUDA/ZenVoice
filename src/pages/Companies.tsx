@@ -529,12 +529,6 @@ const Companies = () => {
                           <Typography variant="body1" fontWeight="medium">
                             {company.name}
                           </Typography>
-                          {company.website && (
-                            <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                              <Globe size={14} style={{ marginRight: 4 }} />
-                              {company.website}
-                            </Typography>
-                          )}
                         </Box>
                       </TableCell>
                       <TableCell>{company.categoryName || 'Uncategorized'}</TableCell>
@@ -550,6 +544,12 @@ const Companies = () => {
                             <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
                               <Mail size={14} style={{ marginRight: 4 }} />
                               {company.email}
+                            </Typography>
+                          )}
+                          {company.website && (
+                            <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                              <Globe size={14} style={{ marginRight: 4 }} />
+                              {company.website}
                             </Typography>
                           )}
                         </Box>
