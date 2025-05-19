@@ -323,7 +323,7 @@ const Contacts = () => {
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                           <Avatar
-                            src={contact.avatar}
+                            src={'/assets/img/contact.png'}
                             alt={`${contact.firstName} ${contact.lastName}`}
                             sx={{ width: 56, height: 56, mr: 2 }}
                           />

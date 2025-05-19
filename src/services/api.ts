@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || window.location.origin, // Use environment variable or fallback to current origin
+  baseURL: import.meta.env.VITE_API_URL || window.location.origin,
   headers: {
     'Content-Type': 'application/json',
   },

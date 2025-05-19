@@ -33,7 +33,7 @@ export const mockContacts = [
     email: 'alice.brown@example.com',
     phone: '+1 (555) 123-4567',
     company: 'Tech Solutions Inc.',
-    avatar: '/assets/img/contact.png',
+
     synced: true,
     createdAt: '2024-01-15T08:30:00Z',
     updatedAt: '2024-03-10T14:20:00Z',
@@ -47,7 +47,7 @@ export const mockContacts = [
     email: 'bob.wilson@example.com',
     phone: '+1 (555) 234-5678',
     company: 'Digital Dynamics LLC',
-    avatar: '/assets/img/contact.png',
+
     synced: false,
     createdAt: '2024-02-01T10:15:00Z',
     updatedAt: '2024-03-05T16:45:00Z',
@@ -61,7 +61,7 @@ export const mockContacts = [
     email: 'carol.martinez@example.com',
     phone: '+1 (555) 345-6789',
     company: 'Innovative Systems Corp',
-    avatar: '/assets/img/contact.png',
+
     synced: true,
     createdAt: '2024-01-20T09:45:00Z',
     updatedAt: '2024-03-08T11:30:00Z',
@@ -75,7 +75,7 @@ export const mockContacts = [
     email: 'david.chen@example.com',
     phone: '+1 (555) 456-7890',
     company: 'Global Solutions Ltd',
-    avatar: '/assets/img/contact.png',
+
     synced: false,
     createdAt: '2024-02-10T11:20:00Z',
     updatedAt: '2024-03-12T13:15:00Z',
@@ -89,7 +89,7 @@ export const mockContacts = [
     email: 'emma.taylor@example.com',
     phone: '+1 (555) 567-8901',
     company: 'Creative Design Co',
-    avatar: '/assets/img/contact.png',
+
     synced: true,
     createdAt: '2024-01-25T13:40:00Z',
     updatedAt: '2024-03-15T09:20:00Z',
@@ -103,7 +103,7 @@ export const mockContacts = [
     email: 'frank.anderson@example.com',
     phone: '+1 (555) 678-9012',
     company: 'Security First Inc',
-    avatar: '/assets/img/contact.png',
+
     synced: false,
     createdAt: '2024-02-15T15:10:00Z',
     updatedAt: '2024-03-18T10:45:00Z',
