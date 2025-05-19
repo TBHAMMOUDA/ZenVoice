@@ -32,7 +32,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  FormHelperText
+  FormHelperText,
+  RadioGroup,
+  FormControlLabel,
+  Radio
 } from '@mui/material';
 import { 
   Plus, 
@@ -45,7 +48,8 @@ import {
   Building,
   Globe,
   Phone,
-  Mail
+  Mail,
+  RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { 
@@ -57,7 +61,8 @@ import {
   UpdateCompanyDto, 
   CompanyStatus, 
   CategoryDto, 
-  ServiceDto 
+  ServiceDto,
+  UpdateStatusCompanyDto
 } from '../services/api';
 
 const ITEMS_PER_PAGE = 25;
@@ -84,8 +89,10 @@ const Companies = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [currentCompany, setCurrentCompany] = useState<CompanyDto | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [newStatus, setNewStatus] = useState<CompanyStatus | null>(null);
   
   // Form state for create/edit
   const [companyForm, setCompanyForm] = useState<CreateCompanyDto>({
@@ -225,6 +232,22 @@ const Companies = () => {
     }
   };
 
+  // Get available status transitions based on current status
+  const getAvailableStatusTransitions = (currentStatus: CompanyStatus): CompanyStatus[] => {
+    switch (currentStatus) {
+      case CompanyStatus.Pending:
+        return [CompanyStatus.Active, CompanyStatus.Inactive];
+      case CompanyStatus.Active:
+        return [CompanyStatus.Inactive];
+      case CompanyStatus.Inactive:
+        return [CompanyStatus.Active, CompanyStatus.Archived];
+      case CompanyStatus.Archived:
+        return [CompanyStatus.Pending];
+      default:
+        return [];
+    }
+  };
+
   // Form handling
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -317,6 +340,45 @@ const Companies = () => {
   const handleDeleteCompany = (company: CompanyDto) => {
     setCurrentCompany(company);
     setDeleteDialogOpen(true);
+  };
+
+  // Status change handling
+  const handleChangeStatus = (company: CompanyDto) => {
+    setCurrentCompany(company);
+    const availableStatuses = getAvailableStatusTransitions(company.status);
+    if (availableStatuses.length > 0) {
+      setNewStatus(availableStatuses[0]);
+      setStatusDialogOpen(true);
+    } else {
+      setError('No status transitions available for this company');
+    }
+  };
+
+  const handleStatusChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewStatus(parseInt(event.target.value) as CompanyStatus);
+  };
+
+  const submitStatusChange = async () => {
+    if (!currentCompany?.id || newStatus === null) return;
+    
+    try {
+      setLoading(true);
+      const updatedCompany = await companiesApi.patchStatus(currentCompany.id, {
+        id: currentCompany.id,
+        status: newStatus
+      });
+      
+      setCompanies(companies.map(company => 
+        company.id === updatedCompany.id ? updatedCompany : company
+      ));
+      setStatusDialogOpen(false);
+      setError(null);
+    } catch (err) {
+      console.error('Error updating company status:', err);
+      setError('Failed to update company status. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const submitCreateCompany = async () => {
@@ -590,17 +652,32 @@ const Companies = () => {
                         <Box sx={{ display: 'flex' }}>
                           <IconButton 
                             size="small" 
+                            onClick={() => handleChangeStatus(company)}
+                            sx={{ mr: 1 }}
+                            color="primary"
+                            disabled={getAvailableStatusTransitions(company.status).length === 0}
+                          >
+                            <Tooltip title="Change Status">
+                              <RefreshCw size={16} />
+                            </Tooltip>
+                          </IconButton>
+                          <IconButton 
+                            size="small" 
                             onClick={() => handleEditCompany(company)}
                             sx={{ mr: 1 }}
                           >
-                            <Edit size={16} />
+                            <Tooltip title="Edit">
+                              <Edit size={16} />
+                            </Tooltip>
                           </IconButton>
                           <IconButton 
                             size="small" 
                             color="error" 
                             onClick={() => handleDeleteCompany(company)}
                           >
-                            <Trash2 size={16} />
+                            <Tooltip title="Delete">
+                              <Trash2 size={16} />
+                            </Tooltip>
                           </IconButton>
                         </Box>
                       </TableCell>
@@ -925,6 +1002,70 @@ const Companies = () => {
             disabled={loading}
           >
             {loading ? <CircularProgress size={24} /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Status Change Dialog */}
+      <Dialog
+        open={statusDialogOpen}
+        onClose={() => setStatusDialogOpen(false)}
+      >
+        <DialogTitle>Change Company Status</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Change status for {currentCompany?.name} from <Chip 
+              label={currentCompany ? getStatusText(currentCompany.status) : ''} 
+              color={currentCompany ? getStatusColor(currentCompany.status) : 'default'} 
+              size="small"
+              sx={{ mx: 0.5 }}
+            /> to:
+          </DialogContentText>
+          
+          {currentCompany && (
+            <FormControl component="fieldset">
+              <RadioGroup
+                aria-label="status"
+                name="status"
+                value={newStatus}
+                onChange={handleStatusChange}
+              >
+                {getAvailableStatusTransitions(currentCompany.status).map((status) => (
+                  <FormControlLabel
+                    key={status}
+                    value={status}
+                    control={<Radio />}
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Chip 
+                          label={getStatusText(status)} 
+                          color={getStatusColor(status)} 
+                          size="small"
+                          sx={{ mr: 1 }}
+                        />
+                        <Typography variant="body2">
+                          {status === CompanyStatus.Active && 'Company is operational and active'}
+                          {status === CompanyStatus.Inactive && 'Company is temporarily inactive'}
+                          {status === CompanyStatus.Archived && 'Company is no longer operational'}
+                          {status === CompanyStatus.Pending && 'Company is pending verification'}
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setStatusDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={submitStatusChange} 
+            variant="contained" 
+            disabled={loading || newStatus === null}
+            color="primary"
+          >
+            {loading ? <CircularProgress size={24} /> : 'Change Status'}
           </Button>
         </DialogActions>
       </Dialog>
