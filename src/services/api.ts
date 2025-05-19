@@ -87,9 +87,18 @@ export enum ContactStatus {
     Archived,
     Pending
 }
+export enum ContactOrigin {
+    Manual,
+    Email,
+    CRM,
+    Other
+}
 export interface ChangeStatusContactDto { id: number; status: ContactStatus; }
 export interface ExternalContactDto { externalId: number; name: string; email: string; phone?: string; companyId: number; }
-export interface ExternalSyncContactDto { id: number; contacts?: ExternalContactDto[]; }
+export interface ExternalSyncContactDto { 
+  origin: ContactOrigin;
+  contacts?: ExternalContactDto[]; 
+}
 
 export interface ServiceDto { id: number; name: string; description?: string; }
 export interface CreateServiceDto { name: string; description?: string; }
@@ -194,9 +203,24 @@ export const companiesApi = {
 
 // --- Contacts API ---
 export const contactsApi = {
-  getAll: async (params?: object): Promise<PaginatedResponse<ContactDto>> => {
+  getAll: async (params?: {
+    page?: number;
+    pageSize?: number;
+    searchText?: string;
+    isAutoSynced?: boolean;
+    companyIds?: number[];
+  }): Promise<PaginatedResponse<ContactDto>> => {
     try {
-      const { data } = await apiClient.get<PaginatedResponse<ContactDto>>('/api/Contacts', { params });
+      // Map from our internal parameter names to the API's expected parameter names
+      const apiParams = {
+        page: params?.page,
+        pageSize: params?.pageSize,
+        searchText: params?.searchText,
+        isAutoSynced: params?.isAutoSynced,
+        companyIds: params?.companyIds
+      };
+      
+      const { data } = await apiClient.get<PaginatedResponse<ContactDto>>('/api/Contacts', { params: apiParams });
       return data;
     } catch (e) { toApiError(e); }
   },
