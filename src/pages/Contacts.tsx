@@ -24,9 +24,14 @@ import {
   Menu,
   Stack,
   CircularProgress,
-  Alert
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText
 } from '@mui/material';
-import { Plus, Phone, Mail, Building, Search, Check, UserPlus, Download, ChevronDown, List, Filter } from 'lucide-react';
+import { Plus, Phone, Mail, Building, Search, Check, UserPlus, Download, ChevronDown, List, Filter, Edit, Trash2 } from 'lucide-react';
 import mockApi from '../services/mockApi';
 
 const ITEMS_PER_PAGE = 25;
@@ -45,6 +50,19 @@ const Contacts = () => {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Modal states
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [currentContact, setCurrentContact] = useState(null);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    company: ''
+  });
 
   // Fetch contacts from API
   useEffect(() => {
@@ -162,7 +180,83 @@ const Contacts = () => {
     navigate('/custom-lists');
   };
 
-  if (loading) {
+  // Modal handlers
+  const handleCreateContact = () => {
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      company: ''
+    });
+    setCreateModalOpen(true);
+    handleMenuClose();
+  };
+
+  const handleViewContact = (contact) => {
+    setCurrentContact(contact);
+    setViewModalOpen(true);
+  };
+
+  const handleEditContact = (contact) => {
+    setCurrentContact(contact);
+    setFormData({
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      email: contact.email,
+      phone: contact.phone,
+      company: contact.company
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleCreateSubmit = async () => {
+    try {
+      // In a real app, this would call the API to create the contact
+      const newContact = {
+        id: Date.now().toString(),
+        ...formData,
+        synced: false,
+        tags: []
+      };
+      
+      setContacts([...contacts, newContact]);
+      setCreateModalOpen(false);
+    } catch (err) {
+      console.error('Error creating contact:', err);
+      setError('Failed to create contact. Please try again.');
+    }
+  };
+
+  const handleEditSubmit = async () => {
+    try {
+      if (!currentContact) return;
+      
+      // In a real app, this would call the API to update the contact
+      const updatedContact = {
+        ...currentContact,
+        ...formData
+      };
+      
+      setContacts(contacts.map(c => 
+        c.id === currentContact.id ? updatedContact : c
+      ));
+      setEditModalOpen(false);
+    } catch (err) {
+      console.error('Error updating contact:', err);
+      setError('Failed to update contact. Please try again.');
+    }
+  };
+
+  if (loading && contacts.length === 0) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
         <CircularProgress />
@@ -213,7 +307,7 @@ const Contacts = () => {
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
               >
-                <MenuItem onClick={() => { navigate('/contacts/create'); handleMenuClose(); }}>
+                <MenuItem onClick={handleCreateContact}>
                   <UserPlus size={16} style={{ marginRight: 8 }} />
                   Add New Contact
                 </MenuItem>
@@ -380,7 +474,7 @@ const Contacts = () => {
                       <CardActions>
                         <Button
                           size="small"
-                          onClick={() => navigate(`/contacts/${contact.id}`)}
+                          onClick={() => handleViewContact(contact)}
                         >
                           View Details
                         </Button>
@@ -388,7 +482,7 @@ const Contacts = () => {
                           <Button
                             size="small"
                             color="primary"
-                            onClick={() => navigate(`/contacts/${contact.id}/edit`)}
+                            onClick={() => handleEditContact(contact)}
                           >
                             Edit
                           </Button>
@@ -443,6 +537,247 @@ const Contacts = () => {
           )}
         </Box>
       </Container>
+
+      {/* Create Contact Modal */}
+      <Dialog 
+        open={createModalOpen} 
+        onClose={() => setCreateModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Create New Contact</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3} sx={{ mt: 0.5 }}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="First Name"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Last Name"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Company"
+                name="company"
+                value={formData.company}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateModalOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={handleCreateSubmit} 
+            variant="contained" 
+            color="primary"
+          >
+            Create Contact
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Contact Modal */}
+      <Dialog 
+        open={editModalOpen} 
+        onClose={() => setEditModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Edit Contact</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3} sx={{ mt: 0.5 }}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="First Name"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Last Name"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Company"
+                name="company"
+                value={formData.company}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditModalOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={handleEditSubmit} 
+            variant="contained" 
+            color="primary"
+          >
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* View Contact Modal */}
+      <Dialog 
+        open={viewModalOpen} 
+        onClose={() => setViewModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        {currentContact && (
+          <>
+            <DialogTitle>
+              Contact Details
+              {!currentContact.synced && (
+                <IconButton
+                  aria-label="edit"
+                  onClick={() => {
+                    setViewModalOpen(false);
+                    handleEditContact(currentContact);
+                  }}
+                  sx={{ position: 'absolute', right: 8, top: 8 }}
+                >
+                  <Edit />
+                </IconButton>
+              )}
+            </DialogTitle>
+            <DialogContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Avatar
+                  src={'/assets/img/contact.png'}
+                  alt={`${currentContact.firstName} ${currentContact.lastName}`}
+                  sx={{ width: 80, height: 80, mr: 3 }}
+                />
+                <Box>
+                  <Typography variant="h5">
+                    {currentContact.firstName} {currentContact.lastName}
+                    {currentContact.synced && (
+                      <Tooltip title="Synced Contact">
+                        <Check size={20} style={{ color: 'green', marginLeft: 8 }} />
+                      </Tooltip>
+                    )}
+                  </Typography>
+                  <Typography variant="subtitle1" color="text.secondary">
+                    {currentContact.company}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Contact Information
+                  </Typography>
+                  <Box sx={{ mt: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Mail size={18} style={{ marginRight: 12 }} />
+                      <Typography variant="body1">{currentContact.email}</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Phone size={18} style={{ marginRight: 12 }} />
+                      <Typography variant="body1">{currentContact.phone}</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Building size={18} style={{ marginRight: 12 }} />
+                      <Typography variant="body1">{currentContact.company}</Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Tags
+                  </Typography>
+                  <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {currentContact.tags && currentContact.tags.length > 0 ? (
+                      currentContact.tags.map(tag => (
+                        <Chip 
+                          key={tag} 
+                          label={tag} 
+                          size="small" 
+                        />
+                      ))
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        No tags assigned
+                      </Typography>
+                    )}
+                  </Box>
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setViewModalOpen(false)}>Close</Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </motion.div>
   );
 };
