@@ -575,7 +575,7 @@ const Contacts = () => {
                                 )}
                               </Box>
                               <Typography variant="body2" color="text.secondary">
-                                {contact.company || ''}
+                                {typeof contact.company === 'string' ? contact.company : ''}
                               </Typography>
                             </Box>
                           </Box>
@@ -595,7 +595,9 @@ const Contacts = () => {
                           {contact.company && (
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <Building size={16} style={{ marginRight: 8 }} />
-                              <Typography variant="body2">{contact.company}</Typography>
+                              <Typography variant="body2">
+                                {typeof contact.company === 'string' ? contact.company : ''}
+                              </Typography>
                             </Box>
                           )}
 
@@ -896,7 +898,9 @@ const Contacts = () => {
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <Typography variant="body2" color="text.secondary">Company</Typography>
-                    <Typography variant="body1">{currentContact.company || 'Not associated'}</Typography>
+                    <Typography variant="body1">
+                      {typeof currentContact.company === 'string' ? currentContact.company : 'Not associated'}
+                    </Typography>
                   </Grid>
                 </Grid>
 
