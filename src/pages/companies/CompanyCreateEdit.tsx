@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -46,17 +46,45 @@ const CompanyCreateEdit: React.FC<CompanyCreateEditProps> = ({
   const isEditMode = Boolean(company);
   
   const [formData, setFormData] = useState<CreateCompanyDto>({
-    name: company?.name || '',
-    description: company?.description || '',
-    address: company?.address || '',
-    phone: company?.phone || '',
-    email: company?.email || '',
-    website: company?.website || '',
-    categoryId: company?.categoryId,
-    serviceIds: company?.services?.map(service => service.id) || []
+    name: '',
+    description: '',
+    address: '',
+    phone: '',
+    email: '',
+    website: '',
+    categoryId: undefined,
+    serviceIds: []
   });
   
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Update form data when company changes
+  useEffect(() => {
+    if (company) {
+      setFormData({
+        name: company.name || '',
+        description: company.description || '',
+        address: company.address || '',
+        phone: company.phone || '',
+        email: company.email || '',
+        website: company.website || '',
+        categoryId: company.categoryId,
+        serviceIds: company.services?.map(service => service.id) || []
+      });
+    } else {
+      // Reset form when creating a new company
+      setFormData({
+        name: '',
+        description: '',
+        address: '',
+        phone: '',
+        email: '',
+        website: '',
+        categoryId: undefined,
+        serviceIds: []
+      });
+    }
+  }, [company]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
