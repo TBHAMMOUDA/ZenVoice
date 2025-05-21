@@ -130,7 +130,7 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({
             
             <Box sx={{ mb: 1 }}>
               <Typography variant="body2" color="text.secondary">Category</Typography>
-              <Typography variant="body1">{company.categoryName || 'Not categorized'}</Typography>
+              <Typography variant="body1">{company.category?.name || 'Not categorized'}</Typography>
             </Box>
             
             <Box sx={{ mb: 1 }}>

@@ -20,7 +20,7 @@ import {
   CreateCompanyDto,
   UpdateCompanyDto,
   CategoryDto,
-  ServiceDto,
+  NavigationDto,
   CompanyDto
 } from '../../services/api';
 
@@ -30,7 +30,7 @@ interface CompanyCreateEditProps {
   onSubmit: (company: CreateCompanyDto | UpdateCompanyDto) => void;
   company?: CompanyDto;
   categories: CategoryDto[];
-  services: ServiceDto[];
+  services: NavigationDto[];
   loading: boolean;
 }
 
@@ -68,7 +68,7 @@ const CompanyCreateEdit: React.FC<CompanyCreateEditProps> = ({
         phone: company.phone || '',
         email: company.email || '',
         website: company.website || '',
-        categoryId: company.categoryId,
+        categoryId: company.category.id,
         serviceIds: company.services?.map(service => service.id) || []
       });
     } else {

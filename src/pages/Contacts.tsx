@@ -212,7 +212,7 @@ const Contacts = () => {
         name: contact.name,
         email: contact.email,
         phone: contact.phone || '',
-        companyId: contact.companyId,
+        companyId: contact.company?.id || undefined,
         tags: contact.tags || []
       });
       setEditModalOpen(true);
@@ -297,8 +297,46 @@ const Contacts = () => {
       if (!currentContact) return;
       
       setLoading(true);
-      // Since there's no direct update endpoint, we'll use the status update endpoint
-      // This is a workaround until a proper update endpoint is available
+      //TODO: Update the contact with the new data
+      // await contactsApi.update(currentContact.id, { } as CreateContactDto);
+      
+      // Refresh the contacts list
+      const response = await contactsApi.getAll({
+        page,
+        pageSize,
+        searchText: search || undefined,
+        isAutoSynced: filter === 'all' ? undefined : filter === 'synced',
+        companyIds: selectedCompanies.length > 0 ? selectedCompanies : undefined
+      });
+      
+      setContacts(response.items);
+      setTotalCount(response.totalCount);
+      setTotalPages(response.totalPages);
+      
+      setEditModalOpen(false);
+      setSnackbar({
+        open: true,
+        message: 'Contact updated successfully',
+        severity: 'success'
+      });
+    } catch (err) {
+      console.error('Error updating contact:', err);
+      setSnackbar({
+        open: true,
+        message: 'Failed to update contact. Please try again.',
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //todo: UI FOR Update the contact status
+  const handleEditStatusSubmit = async () => {
+    try {
+      if (!currentContact) return;
+      
+      setLoading(true);
       await contactsApi.updateStatus(currentContact.id, {
         id: currentContact.id,
         status: 0 // Active status
@@ -334,7 +372,6 @@ const Contacts = () => {
       setLoading(false);
     }
   };
-
   const handleDeleteSubmit = async () => {
     try {
       if (!currentContact) return;
@@ -559,7 +596,6 @@ const Contacts = () => {
                         <CardContent>
                           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                             <Avatar
-                              src={'/assets/img/contact.png'}
                               alt={contact.name}
                               sx={{ width: 56, height: 56, mr: 2 }}
                             />
@@ -575,7 +611,7 @@ const Contacts = () => {
                                 )}
                               </Box>
                               <Typography variant="body2" color="text.secondary">
-                                {typeof contact.company === 'string' ? contact.company : ''}
+                                 {contact.company?.name ?? 'Not associated'}
                               </Typography>
                             </Box>
                           </Box>
@@ -596,7 +632,7 @@ const Contacts = () => {
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <Building size={16} style={{ marginRight: 8 }} />
                               <Typography variant="body2">
-                                {typeof contact.company === 'string' ? contact.company : ''}
+                                {contact.company?.name ?? 'Not associated'}
                               </Typography>
                             </Box>
                           )}
@@ -869,7 +905,6 @@ const Contacts = () => {
               <Box sx={{ mt: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                   <Avatar
-                    src={'/assets/img/contact.png'}
                     alt={currentContact.name}
                     sx={{ width: 64, height: 64, mr: 2 }}
                   />
@@ -899,7 +934,7 @@ const Contacts = () => {
                   <Grid item xs={12} sm={6}>
                     <Typography variant="body2" color="text.secondary">Company</Typography>
                     <Typography variant="body1">
-                      {typeof currentContact.company === 'string' ? currentContact.company : 'Not associated'}
+                      {currentContact.company?.name ?? 'Not associated'}
                     </Typography>
                   </Grid>
                 </Grid>

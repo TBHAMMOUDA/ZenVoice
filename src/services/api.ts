@@ -76,11 +76,19 @@ export interface ContactDto {
   email: string;
   phone?: string;
   companyId?: number;
-  company?: string;
+  company?: CompanyDto;
   isAutoSynced: boolean;
   tags?: TagDto[];
 }
 export interface CreateContactDto { name: string; email: string; phone?: string; companyId?: number; tags?: TagDto[]; }
+export interface UpdateContactDto {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  companyId?: number;
+  tags?: number[];
+}
 export enum ContactStatus { 
     Active,
     Inactive,
@@ -99,8 +107,7 @@ export interface ExternalSyncContactDto {
   origin: ContactOrigin;
   contacts?: ExternalContactDto[]; 
 }
-
-export interface ServiceDto { id: number; name: string; description?: string; }
+export interface NavigationDto { id: number; name: string; description?: string; }
 export interface CreateServiceDto { name: string; description?: string; }
 export interface UpdateServiceDto { name: string; description?: string; }
 
@@ -120,8 +127,8 @@ export interface CompanyDto {
   website: string;
   status: CompanyStatus;
   categoryId?: number;
-  categoryName: string;
-  services?: ServiceDto[];
+  category: NavigationDto;
+  services?: NavigationDto[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -232,7 +239,13 @@ export const contactsApi = {
   },
   create: async (dto: CreateContactDto): Promise<ContactDto> => {
     try {
-      const { data } = await apiClient.post<ContactDto>('/api/Contacts', dto);
+      const { data } = await apiClient.put<ContactDto>('/api/Contacts', dto);
+      return data;
+    } catch (e) { toApiError(e); }
+  },
+  update: async (id: number, dto: UpdateContactDto): Promise<ContactDto> => {
+    try {
+      const { data } = await apiClient.post<ContactDto>(`/api/Contacts/${id}`, dto);
       return data;
     } catch (e) { toApiError(e); }
   },
@@ -274,27 +287,27 @@ export const contactsApi = {
 
 // --- Services API ---
 export const servicesApi = {
-  getAll: async (): Promise<ServiceDto[]> => {
+  getAll: async (): Promise<NavigationDto[]> => {
     try {
-      const { data } = await apiClient.get<ServiceDto[]>('/api/Services');
+      const { data } = await apiClient.get<NavigationDto[]>('/api/Services');
       return data;
     } catch (e) { toApiError(e); }
   },
-  getById: async (id: number): Promise<ServiceDto> => {
+  getById: async (id: number): Promise<NavigationDto> => {
     try {
-      const { data } = await apiClient.get<ServiceDto>(`/api/Services/${id}`);
+      const { data } = await apiClient.get<NavigationDto>(`/api/Services/${id}`);
       return data;
     } catch (e) { toApiError(e); }
   },
-  create: async (dto: CreateServiceDto): Promise<ServiceDto> => {
+  create: async (dto: CreateServiceDto): Promise<NavigationDto> => {
     try {
-      const { data } = await apiClient.post<ServiceDto>('/api/Services', dto);
+      const { data } = await apiClient.post<NavigationDto>('/api/Services', dto);
       return data;
     } catch (e) { toApiError(e); }
   },
-  update: async (id: number, dto: UpdateServiceDto): Promise<ServiceDto> => {
+  update: async (id: number, dto: UpdateServiceDto): Promise<NavigationDto> => {
     try {
-      const { data } = await apiClient.put<ServiceDto>(`/api/Services/${id}`, dto);
+      const { data } = await apiClient.put<NavigationDto>(`/api/Services/${id}`, dto);
       return data;
     } catch (e) { toApiError(e); }
   },

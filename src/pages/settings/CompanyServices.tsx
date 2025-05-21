@@ -25,7 +25,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { servicesApi, ServiceDto } from '../../services/api';
+import { servicesApi, NavigationDto } from '../../services/api';
 
 const ITEMS_PER_PAGE = 25;
 
@@ -41,10 +41,10 @@ const CompanyServices: React.FC<CompanyServicesProps> = ({ onError, onSuccess })
   const [loading, setLoading] = useState(false);
   
   // Services state
-  const [services, setServices] = useState<ServiceDto[]>([]);
+  const [services, setServices] = useState<NavigationDto[]>([]);
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
   const [serviceDeleteConfirmOpen, setServiceDeleteConfirmOpen] = useState(false);
-  const [currentService, setCurrentService] = useState<ServiceDto>({ id: undefined, name: '', description: '' });
+  const [currentService, setCurrentService] = useState<NavigationDto>({ id: undefined, name: '', description: '' });
   const [isServiceEditMode, setIsServiceEditMode] = useState(false);
   const [serviceFilter, setServiceFilter] = useState('');
   const [servicePage, setServicePage] = useState(1);
@@ -92,13 +92,13 @@ const CompanyServices: React.FC<CompanyServicesProps> = ({ onError, onSuccess })
     setServiceDialogOpen(true);
   };
   
-  const handleEditService = (service: ServiceDto) => {
+  const handleEditService = (service: NavigationDto) => {
     setCurrentService(service);
     setIsServiceEditMode(true);
     setServiceDialogOpen(true);
   };
   
-  const handleServiceDelete = (service: ServiceDto) => {
+  const handleServiceDelete = (service: NavigationDto) => {
     setCurrentService(service);
     setServiceDeleteConfirmOpen(true);
   };

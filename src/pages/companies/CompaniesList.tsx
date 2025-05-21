@@ -28,6 +28,7 @@ import {
   Pagination
 } from '@mui/material';
 import { 
+  Eye,
   Plus, 
   Search, 
   Filter, 
@@ -43,9 +44,6 @@ import {
   CompanyStatus, 
   CategoryDto
 } from '../../services/api';
-import CompanyCreateEdit from './CompanyCreateEdit';
-import CompanyDetails from './CompanyDetails';
-import CompanyStatusChange from './CompanyStatusChange';
 
 const ITEMS_PER_PAGE = 25;
 
@@ -54,6 +52,7 @@ interface CompaniesListProps {
   categories: CategoryDto[];
   loading: boolean;
   error: string | null;
+  onViewDetailsCompany: (company: CompanyDto) => void;
   onCreateCompany: () => void;
   onEditCompany: (company: CompanyDto) => void;
   onDeleteCompany: (company: CompanyDto) => void;
@@ -66,6 +65,7 @@ const CompaniesList: React.FC<CompaniesListProps> = ({
   categories,
   loading,
   error,
+  onViewDetailsCompany,
   onCreateCompany,
   onEditCompany,
   onDeleteCompany,
@@ -363,7 +363,7 @@ const CompaniesList: React.FC<CompaniesListProps> = ({
                       <TableCell component="th" scope="row">
                         {company.name}
                       </TableCell>
-                      <TableCell>{company.categoryName || 'N/A'}</TableCell>
+                      <TableCell>{company.category?.name || 'N/A'}</TableCell>
                       <TableCell>
                         <Chip 
                           label={getStatusText(company.status)} 
@@ -378,6 +378,14 @@ const CompaniesList: React.FC<CompaniesListProps> = ({
                         {company.updatedAt ? format(new Date(company.updatedAt), 'MMM d, yyyy') : 'N/A'}
                       </TableCell>
                       <TableCell align="right">
+                        <Tooltip title="View details">
+                          <IconButton 
+                            size="small" 
+                            onClick={() => onViewDetailsCompany(company)}
+                          >
+                            <Eye size={16} />
+                          </IconButton>
+                        </Tooltip>
                         <Tooltip title="Change Status">
                           <IconButton 
                             size="small" 

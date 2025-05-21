@@ -17,13 +17,13 @@ import {
   Globe,
   Building
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Import modular components
-import ContactTags from './settings/ContactTags';
-import CompanyServices from './settings/CompanyServices';
-import CompanyCategories from './settings/CompanyCategories';
-import UserPreferences from './settings/UserPreferences';
+import ContactTags from './ContactTags';
+import CompanyServices from './CompanyServices';
+import CompanyCategories from './CompanyCategories';
+import UserPreferences from './UserPreferences';
 
 const Settings = () => {
   const { t } = useTranslation();

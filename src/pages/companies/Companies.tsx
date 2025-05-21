@@ -21,19 +21,18 @@ import {
   UpdateCompanyDto, 
   CompanyStatus, 
   CategoryDto, 
-  ServiceDto,
-  UpdateStatusCompanyDto
-} from '../services/api';
-import CompaniesList from './companies/CompaniesList';
-import CompanyCreateEdit from './companies/CompanyCreateEdit';
-import CompanyDetails from './companies/CompanyDetails';
-import CompanyStatusChange from './companies/CompanyStatusChange';
+  NavigationDto,
+} from '../../services/api';
+import CompaniesList from './CompaniesList';
+import CompanyCreateEdit from './CompanyCreateEdit';
+import CompanyDetails from './CompanyDetails';
+import CompanyStatusChange from './CompanyStatusChange';
 
 const Companies = () => {
   // API data states
   const [companies, setCompanies] = useState<CompanyDto[]>([]);
   const [categories, setCategories] = useState<CategoryDto[]>([]);
-  const [services, setServices] = useState<ServiceDto[]>([]);
+  const [services, setServices] = useState<NavigationDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -196,6 +195,7 @@ const Companies = () => {
           loading={loading}
           error={error}
           onCreateCompany={handleCreateCompany}
+          onViewDetailsCompany={handleViewCompany}
           onEditCompany={handleEditCompany}
           onDeleteCompany={handleDeleteCompany}
           onChangeStatus={handleChangeStatus}
