@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -18,9 +18,13 @@ import {
   ListItemButton,
   ListItemSecondaryAction,
   Button,
-  Divider
+  Divider,
+  Collapse
 } from '@mui/material';
-import { LayoutDashboard, FileText, ShoppingCart, Users, LogOut, Sun, Moon, Settings, Bell, X } from 'lucide-react';
+import { LayoutDashboard, FileText, ShoppingCart, Users, 
+  LogOut, Sun, Moon, Settings, Bell, X, Building,
+  ChevronDown, ChevronRight, SquareUserRound, BookUser
+} from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -31,6 +35,11 @@ const Layout = () => {
   const { logout, user } = useAuth();
   const { mode, toggleTheme } = useTheme();
   const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
+  
+  const handleToggle = (key: string) => {
+    setOpenMap(prev => ({ ...prev, [key]: !prev[key] }));
+  };
   
   // Mock notifications data
   const [notifications, setNotifications] = useState([
@@ -61,7 +70,15 @@ const Layout = () => {
     { text: t('navigation.dashboard'), icon: <LayoutDashboard size={24} />, path: '/' },
     { text: t('navigation.invoices'), icon: <FileText size={24} />, path: '/invoices' },
     { text: t('navigation.orders'), icon: <ShoppingCart size={24} />, path: '/orders' },
-    { text: t('navigation.contacts'), icon: <Users size={24} />, path: '/contacts' },
+    { 
+      text: t('navigation.contacts'), 
+      icon: <Users size={24} />, 
+      children: [
+        { text: t('navigation.contacts'), icon:<Users size={24} />, path: '/contacts' },
+        { text: t('navigation.customListContacts'), icon: <BookUser size={24} />, path: '/custom-lists' }
+      ] 
+    },
+    { text: t('navigation.companies'), icon: <Building size={24} />, path: '/companies' },
   ];
 
   const drawerWidth = 240;
@@ -126,29 +143,74 @@ const Layout = () => {
         <Box sx={{ overflow: 'auto' }}>
           <List>
             {menuItems.map((item) => (
-              <ListItem
-                button
-                key={item.text}
-                onClick={() => navigate(item.path)}
-                selected={location.pathname === item.path}
-                sx={{
-                  '&.Mui-selected': {
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                    },
-                    '& .MuiListItemIcon-root': {
+              <React.Fragment key={item.text}>
+                <ListItemButton
+                  onClick={() => {
+                    if (item.children) {
+                      handleToggle(item.text);
+                    } else if (item.path) {
+                      navigate(item.path);
+                    }
+                  }}
+                  selected={!item.children && location.pathname === item.path}
+                  sx={{
+                    '&.Mui-selected': {
+                      backgroundColor: 'primary.main',
                       color: 'white',
+                      '&:hover': {
+                        backgroundColor: 'primary.dark',
+                      },
+                      '& .MuiListItemIcon-root': {
+                        color: 'white',
+                      },
                     },
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ color: location.pathname === item.path ? 'white' : 'inherit' }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItem>
+                  }}
+                >
+                  <ListItemIcon sx={{ 
+                    color: !item.children && location.pathname === item.path ? 'white' : 'inherit' 
+                  }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.text} />
+                  {item.children && (
+                    openMap[item.text] ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+                  )}
+                </ListItemButton>
+                
+                {item.children && (
+                  <Collapse in={openMap[item.text]} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                      {item.children.map((child) => (
+                        <ListItemButton
+                          key={child.text}
+                          onClick={() => navigate(child.path)}
+                          selected={location.pathname === child.path}
+                          sx={{
+                            pl: 4,
+                            '&.Mui-selected': {
+                              backgroundColor: 'primary.main',
+                              color: 'white',
+                              '&:hover': {
+                                backgroundColor: 'primary.dark',
+                              },
+                              '& .MuiListItemIcon-root': {
+                                color: 'white',
+                              },
+                            },
+                          }}
+                        >
+                          <ListItemIcon sx={{ 
+                            color: location.pathname === child.path ? 'white' : 'inherit' 
+                          }}>
+                            {child.icon}
+                          </ListItemIcon>
+                          <ListItemText primary={child.text} />
+                        </ListItemButton>
+                      ))}
+                    </List>
+                  </Collapse>
+                )}
+              </React.Fragment>
             ))}
           </List>
         </Box>
@@ -265,4 +327,4 @@ const Layout = () => {
   );
 };
 
-export default Layout
+export default Layout;
